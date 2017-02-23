@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Common">
+      <UniqueIdentifier>{737be2b3-d114-47e5-9a05-bdf421bebf9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{accc2e30-bd4f-4e88-83ea-02e88450b117}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Taiko">
+      <UniqueIdentifier>{1b12e3bc-7f8d-4ef4-8b91-ff535a9f2589}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneMenu.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneTitle.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneSongSelect.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneOption.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="WinMain.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Drawer.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="ScenePlay.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Songs.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Sound.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Bullet.cpp">
+      <Filter>Taiko</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Scene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneMenu.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneTitle.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneOption.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneSongSelect.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="define.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Drawer.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="smart_ptr.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="ScenePlay.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Songs.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Sound.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Bullet.h">
+      <Filter>Taiko</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
