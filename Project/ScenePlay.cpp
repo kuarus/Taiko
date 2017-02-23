@@ -8,8 +8,8 @@
 
 static const int WAIT_APPEAR_TIME = 40;
 static const int MUSIC_VOL = 80;
-static const int MAX_CODE = 32;
-static const int LOAD_IDX = 2000;
+static const int MAX_CODE = 64;
+static const int OFF_SET = 100;
 
 ScenePlay::ScenePlay( int select, SongsPtr songs ) :
 _state( STATE::STATE_NORMAL ),
@@ -26,12 +26,11 @@ _play_state( PLAY_STATE::PLAY_STATE_WAIT ) {
 	std::string music_file = music_data.directory + "/" + songs->getMusicFileName( select );
 	_music = Sound::loadSound( music_file.c_str( ) );
 	_title = songs->getTitle( select );
-	_code = songs->getCode( select );
+	_code_list = songs->getCode( select );
+ 	_offset = songs->getOffset( select );
 	Drawer::changeFont( H_FONT );
 	_bpm = songs->getBpm( select );
-	for ( int i = 0; i < LOAD_IDX; i++ ) {
-		createBullet( i );
-	}
+	createBullet( );
 }
 
 
@@ -68,6 +67,7 @@ void ScenePlay::update( GamePtr game ) {
 
 void ScenePlay::draw( ) {
 	drawBg( );
+	drawBarLine( );
 	drawBullet( );
 	drawTitle( );
 	if ( _play_state == PLAY_STATE::PLAY_STATE_WAIT ) {
@@ -82,8 +82,7 @@ void ScenePlay::initialize( ) {
 }
 
 void ScenePlay::updatePlay( ) {
-	int idx = Sound::getSoundPosition( _music ) / _bpm / 10;
-	createBullet( idx + LOAD_IDX );
+	int idx = getSoundIdx( );
 	updateBullet( idx );
 
 	_count++;
@@ -113,12 +112,12 @@ void ScenePlay::drawBg( ) {
 	Drawer::drawGraph( 0, 0, 50, 200, 50 + 128, 200 + 128, 64, 64, _taiko_image );
 }
 
-void ScenePlay::drawBarLine( ) {
-
+void ScenePlay::drawBarLine( ) const {
+	//	Drawer::drawLine( x, 200, x, 300 );
 }
 
-void ScenePlay::drawBullet( ) {
-	std::list< BulletPtr >::iterator ite = _bullets.begin( );
+void ScenePlay::drawBullet( ) const {
+	std::list< BulletPtr >::const_iterator ite = _bullets.begin( );
 	while ( ite != _bullets.end( ) ) {
 		(*ite)->draw( _taiko_image );
 		ite++;
@@ -126,52 +125,35 @@ void ScenePlay::drawBullet( ) {
 }
 
 
-void ScenePlay::drawTitle( ) {
-	int x = WINDOW_WIDTH - _title.size( ) * FONT_SIZE;
+void ScenePlay::drawTitle( ) const {
+	int x = WINDOW_WIDTH - _title.length( ) * ( FONT_SIZE / 2 ) - 20;
 	int y = 340;
 	Drawer::drawString( x, y, _title.c_str( ) );
 }
 
-int ScenePlay::getCode( int idx ) {
-	short a = 100;
-	int size = _code.size( );
-	if ( idx <= 0 || size == 0 ) {
-		return 0;
+void ScenePlay::createBullet( ) {
+	int idx = 0;
+	int code_list_size = _code_list.size( );
+	for ( int i = 0; i < code_list_size; i++ ) {
+		int code_size = _code_list[ i ].size( );
+		for ( int j = 0; j < code_size; j++ ) {
+			int size = MAX_CODE / code_size;
+			int type = _code_list[ i ][ j ];
+			int idx = ( MAX_CODE * i ) + ( j * size );
+			if ( type > 4 || type == 0 ) {
+				continue;
+			}
+			_bullets.push_back( BulletPtr( new Bullet( (Bullet::TYPE)type, ( idx + OFF_SET ) * 10 ) ) );
+		}
 	}
-	if ( idx / MAX_CODE >= size ) {
-		return -1;
-	}
-	std::vector< char > tmp = _code[ idx / MAX_CODE ];
-	if ( tmp.size( ) == 0 ) {
-		return 0;
-	}
-	int analysis = idx % MAX_CODE;
-	int mag = MAX_CODE * 10 / tmp.size( );
-	if ( mag <= 0 ) {
-		return 0;
-	}
-	int code = tmp[ analysis * 10 / mag ];
-	if ( _old_position == analysis * 10 / mag ) {
-		return 0;
-	}
-	if ( code > 2 ) {
-		return 0;
-	}
-	if ( idx == _old_idx ) {
-		return 0;
-	}
-	_old_position = analysis * 10 / mag;
-	_old_idx = idx;
-	return code;
 }
 
-void ScenePlay::createBullet( int idx ) {
-	int code = getCode( idx );
-	if ( code == -1 ) {
-		//‚¨‚í‚è
-		Drawer::drawString( 0, 0, "Clear" );
-	}
-	if( code != Bullet::TYPE::TYPE_NONE ) {
-		_bullets.push_back( BulletPtr( new Bullet( (Bullet::TYPE)code, idx ) ) );
-	}
+int ScenePlay::getSoundIdx( ) const {
+	int idx = Sound::getSoundPosition( _music );
+	idx *= 3;
+	idx -= _offset;
+	idx -= OFF_SET;
+	idx /= _bpm;
+	//idx /= 100;
+	return idx;
 }

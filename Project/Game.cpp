@@ -14,15 +14,16 @@ _scene( SCENE::SCENE_TITLE ),
 _old_scene( _scene ),
 _selecting_song( 0 ),
 _is_finish( false ){
+
+	ChangeWindowMode( TRUE );
+	SetGraphMode( WINDOW_WIDTH, WINDOW_HEIGHT, 16 );
 	if ( DxLib_Init( ) == -1 ) {
 		return;
 	}
 
-	SetGraphMode( WINDOW_WIDTH, WINDOW_HEIGHT, 16 );
 	//SetBackgroundColor( 200, 0, 60 );
 	SetDrawScreen( DX_SCREEN_BACK );
 	SetDrawMode( DX_DRAWMODE_BILINEAR ) ;
-	ChangeWindowMode( TRUE );
 	SetFontSize( FONT_SIZE );
 
 	for ( int i = 0; i < GRAPH_MAX; i++ ) {
@@ -42,9 +43,8 @@ Game::~Game( ) {
 
 void Game::run( ) {
 	while ( !ProcessMessage( ) && !isFinish( ) ) {
-		ClearDrawScreen( );
 		update( );
-		ScreenFlip( );
+		flip( );
 	}
 }
 
@@ -52,20 +52,20 @@ void Game::setFinish( ) {
 	_is_finish = true;
 }
 
-bool Game::isPushKey( int key ) {
+bool Game::isPushKey( int key ) const {
 	return _key[ key ] == 1;
 }
 
-bool Game::isHoldKey( int key ) {
+bool Game::isHoldKey( int key ) const {
 	return _key[ key ] > 1;
 }
 
-bool Game::isNext( ) {
+bool Game::isNext( ) const {
 	bool push = false;
-	if ( isPushKey( KEY::KEY_F ) ) {
+	if ( isDongLeft( ) ) {
 		push = true;
 	}
-	if ( isPushKey( KEY::KEY_J ) ) {
+	if ( isDongRight( ) ) {
 		push = true;
 	}
 	if ( isPushKey( KEY::KEY_SPACE ) ) {
@@ -74,7 +74,7 @@ bool Game::isNext( ) {
 	return push;
 }
 
-bool Game::isBack( ) {
+bool Game::isBack( ) const {
 	bool push = false;
 	if ( isPushKey( KEY::KEY_Q ) ) {
 		push = true;
@@ -85,14 +85,26 @@ bool Game::isBack( ) {
 	if ( isPushKey( KEY::KEY_ESCAPE ) ) {
 		push = true;
 	}
-
-	if ( push ) {
-		PlaySoundMem( _sound_ka, DX_PLAYTYPE_BACK );
-	}
 	return push;
 }
 
-bool Game::isLeft( ) {
+bool Game::isDongLeft( ) const {
+	bool result = isPushKey( KEY::KEY_F );
+	if ( result ) {
+		PlaySoundMem( _sound_dong, DX_PLAYTYPE_BACK );
+	}
+	return result;
+}
+
+bool Game::isDongRight( ) const {
+	bool result = isPushKey( KEY::KEY_J );
+	if ( result ) {
+		PlaySoundMem( _sound_dong, DX_PLAYTYPE_BACK );
+	}
+	return result;
+}
+
+bool Game::isKaLeft( ) const {
 	bool push = false;
 	if ( isPushKey( KEY::KEY_D ) ) {
 		push = true;
@@ -100,16 +112,22 @@ bool Game::isLeft( ) {
 	if ( isPushKey( KEY::KEY_LEFT ) ) {
 		push = true;
 	}
+	if ( push ) {
+		PlaySoundMem( _sound_ka, DX_PLAYTYPE_BACK );
+	}
 	return push;
 }
 
-bool Game::isRight( ) {
+bool Game::isKaRight( ) const {
 	bool push = false;
 	if ( isPushKey( KEY::KEY_K ) ) {
 		push = true;
 	}
 	if ( isPushKey( KEY::KEY_RIGHT ) ) {
 		push = true;
+	}
+	if ( push ) {
+		PlaySoundMem( _sound_ka, DX_PLAYTYPE_BACK );
 	}
 	return push;
 }
@@ -128,6 +146,9 @@ bool Game::isFinish( ) {
 			_is_finish = true;
 		}
 	}
+	if ( isPushKey( KEY::KEY_ESCAPE ) ) {
+		_is_finish = true;
+	}
 	return _is_finish;
 }
 
@@ -144,7 +165,9 @@ void Game::update( ) {
 	updateSE( );
 }
 
-void Game::flip( ) {
+void Game::flip( ) const {
+	ScreenFlip( );
+	ClearDrawScreen( );
 }
 
 GamePtr Game::getThis( ) {
@@ -167,25 +190,6 @@ void Game::changeScene( SCENE scene ) {
 		break;
 	case SCENE::SCENE_PLAY:
 		_scene_ptr.reset( new ScenePlay( _selecting_song, _songs ) );
-	}
-}
-
-void Game::updateSE( ) {
-	if ( isPushKey( KEY::KEY_F ) ) {
-		PlaySoundMem( _sound_dong, DX_PLAYTYPE_BACK );
-	}
-	if ( isPushKey( KEY::KEY_J ) ) {
-		PlaySoundMem( _sound_dong, DX_PLAYTYPE_BACK );
-	}
-	if ( isLeft( ) ) {
-		PlaySoundMem( _sound_ka, DX_PLAYTYPE_BACK );
-	}
-	if ( isRight( ) ) {
-		PlaySoundMem( _sound_ka, DX_PLAYTYPE_BACK );
-	}
-
-	if ( isPushKey( KEY::KEY_SPACE ) ) {
-		PlaySoundMem( _sound_dong, DX_PLAYTYPE_BACK );
 	}
 }
 

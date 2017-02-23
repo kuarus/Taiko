@@ -1,5 +1,8 @@
 #pragma once
 #include "define.h"
+#include "smart_ptr.h"
+
+PTR( Game );
 
 class Bullet {
 public:
@@ -7,13 +10,16 @@ public:
 		TYPE_NONE,
 		TYPE_DONG,
 		TYPE_KA,
+		TYPE_BIG_DONG,
+		TYPE_BIG_KA,
+		TYPE_REPEATE,
 		MAX_TYPE
 	};
 public:
 	Bullet( TYPE type, int idx );
 	virtual ~Bullet( );
 public:
-	void update( int idx );
+	void update( int idx, GamePtr game );
 	void draw( int image );
 	int getX( );
 	bool isOutSideScreen( );

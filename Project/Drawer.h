@@ -13,4 +13,5 @@ public:
 	static int loadGraph( const char* filename );
 	static void deleteGraph( int handle );
 	static void changeFont( const char* type );
+	static void drawLine( int x1, int y1, int x2, int y2 );
 };

@@ -12,19 +12,19 @@ public:
 	Songs( );
 	virtual ~Songs( );
 public:
-	std::vector< SONG > getSongList( );
-	std::string getTitle( std::string file_name );
-	std::string getTitle( int idx );
-	std::string getMusicFileName( int idx );
-	SONG getSongData( int idx );
-	int getLevel( int idx );
-	std::vector< std::vector< char > > getCode( int idx );
-	int getBpm( int idx );
+	std::vector< SONG > getSongList( ) const;
+	std::string getTitle( std::string file_name ) const;
+	std::string getTitle( int idx ) const;
+	std::string getMusicFileName( int idx ) const;
+	SONG getSongData( int idx ) const;
+	int getLevel( int idx ) const;
+	std::vector< std::vector< char > > getCode( int idx ) const;
+	int getBpm( int idx ) const;
+	int getOffset( int idx ) const;
 private:
 	void sarchFile( );
-	std::vector< std::string > getDirectory( );
-	std::string getDirectory( int idx );
-	std::string getGenreName( std::string directory );
+	std::vector< std::string > getDirectory( ) const;
+	std::string getGenreName( std::string directory ) const;
 private:
 	std::vector< SONG > _song_list;
 };

@@ -44,19 +44,20 @@ public:
 	void setSelectSong( int select );
 	void run( );
 	void setFinish( );
-	bool isPushKey( int key );
-	bool isHoldKey( int key );
-	bool isNext( );
-	bool isBack( );
-	bool isLeft( );
-	bool isRight( );
+	bool isPushKey( int key ) const;
+	bool isHoldKey( int key ) const;
+	bool isNext( ) const;
+	bool isBack( ) const;
+	bool isDongLeft( ) const;
+	bool isDongRight( ) const;
+	bool isKaLeft( ) const;
+	bool isKaRight( ) const;
 private:
 	bool isFinish( );
 	void update( );
-	void flip( );
+	void flip( ) const;
 	GamePtr getThis( );
 	void changeScene( SCENE scene );
-	void updateSE( );
 	void updateKey( );
 private:
 	SCENE _scene;

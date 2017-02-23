@@ -34,11 +34,11 @@ private:
 	void updatePlay( );
 	void updateBullet( int idx );
 	void drawBg( );
-	void drawBarLine( );
-	void drawBullet( );
-	void drawTitle( );
-	int getCode( int idx );
-	void createBullet( int idx );
+	void drawBarLine( ) const;
+	void drawBullet( ) const;
+	void drawTitle( ) const;
+	void createBullet( );
+	int getSoundIdx( ) const;
 private:
 	int _bg_image[ STATE::MAX_STATE ];
 	int _taiko_image;
@@ -48,7 +48,8 @@ private:
 	int _music;
 	std::list< BulletPtr > _bullets;
 	std::string _title;
-	std::vector< std::vector< char > > _code;
+	std::vector< std::vector< char > > _code_list;
+	int _offset;
 	bool _start;
 	int _bpm;
 	int _old_idx;

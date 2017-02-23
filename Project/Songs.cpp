@@ -41,7 +41,7 @@ void Songs::sarchFile( ) {
 	}
 }
 
-std::vector< std::string > Songs::getDirectory( ) {
+std::vector< std::string > Songs::getDirectory( ) const {
 	std::vector< std::string > directory;
 	WIN32_FIND_DATA win32fd;
 	std::string sarch = DIRECTORY + "\\*";
@@ -60,7 +60,7 @@ std::vector< std::string > Songs::getDirectory( ) {
 	return directory;
 }
 
-std::string Songs::getGenreName( std::string directory ) {
+std::string Songs::getGenreName( std::string directory ) const {
 	std::string genre_name = "";
 
 	std::string file_name = directory + "/";
@@ -78,7 +78,7 @@ std::string Songs::getGenreName( std::string directory ) {
 	return genre_name;
 }
 
-std::string Songs::getMusicFileName( int idx ) {
+std::string Songs::getMusicFileName( int idx ) const {
 
 	std::string music = "";
 	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
@@ -95,11 +95,11 @@ std::string Songs::getMusicFileName( int idx ) {
 	return music;
 }
 
-Songs::SONG Songs::getSongData( int idx ) {
+Songs::SONG Songs::getSongData( int idx ) const {
 	return _song_list[ idx ];
 }
 
-int Songs::getLevel( int idx ) {
+int Songs::getLevel( int idx ) const {
 	int level = 0;
 	std::string level_str = "";
 	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
@@ -117,7 +117,7 @@ int Songs::getLevel( int idx ) {
 	return level;
 }
 
-std::vector< std::vector< char > > Songs::getCode( int idx ) {
+std::vector< std::vector< char > > Songs::getCode( int idx ) const {
 	std::vector< std::vector< char > > code;
 	std::string tmp_str = "";
 	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
@@ -160,7 +160,7 @@ std::vector< std::vector< char > > Songs::getCode( int idx ) {
 	return code;
 }
 
-int Songs::getBpm( int idx ) {
+int Songs::getBpm( int idx ) const {
 	int bpm = 0;
 	std::string tmp;
 	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
@@ -175,15 +175,45 @@ int Songs::getBpm( int idx ) {
 			break;
 		}
 	}
-	bpm = atoi( tmp.c_str( ) );
+	double d_bpm = std::stod( tmp, 0 );
+	d_bpm *= 10;
+	bpm = (int)d_bpm;
 	return bpm;
 }
 
-std::vector< Songs::SONG > Songs::getSongList( ) {
+int Songs::getOffset( int idx ) const {
+	int offset = 0;
+	std::string tmp;
+	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
+	std::ifstream ifs( file_name );
+	if ( ifs.fail( ) ) {
+		return offset;
+	}
+	bool is_minus = false;
+	while ( getline( ifs, tmp ) ) {
+		if ( strstr( tmp.c_str( ), "OFFSET:" ) != NULL ) {
+			tmp.replace( 0, 7, "" );
+			if ( strstr( tmp.c_str( ), "-" ) != NULL ) {
+				tmp.replace( 0, 1, "" );
+				is_minus = true;
+			}
+			break;
+		}
+	}
+	double d_offset = std::stod( tmp, 0 );
+	d_offset *= 1000;
+	offset = (int)d_offset;
+	if ( is_minus ) {
+		offset *= -1;
+	}
+	return offset;
+}
+
+std::vector< Songs::SONG > Songs::getSongList( ) const {
 	return _song_list;
 }
 
-std::string Songs::getTitle( std::string file_name ) {
+std::string Songs::getTitle( std::string file_name ) const {
 	std::string title;
 	std::ifstream ifs( file_name );
 	if ( ifs.fail( ) ) {
@@ -199,7 +229,7 @@ std::string Songs::getTitle( std::string file_name ) {
 	return title;
 }
 
-std::string Songs::getTitle( int idx ) {
+std::string Songs::getTitle( int idx ) const {
 	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
 
 	std::string title;

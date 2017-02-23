@@ -33,7 +33,6 @@ void Drawer::drawVString( int x, int y, const char* str, bool selecting ) {
 }
 
 void Drawer::drawString( int x, int y, const char* str ) {
-
 	DrawString( x, y, str, GetColor( 255, 255, 255 ), GetColor( 0, 0, 0 ) );
 }
 
@@ -47,4 +46,8 @@ void Drawer::deleteGraph( int handle ) {
 
 void Drawer::changeFont( const char* type ) {
 	ChangeFont( type );
+}
+
+void Drawer::drawLine( int x1, int y1, int x2, int y2 ) {
+	DrawLine( x1,y1, x2, y2, GetColor( 255, 255, 255 ), 1 );
 }
