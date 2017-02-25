@@ -20,10 +20,16 @@ public:
 	virtual ~Bullet( );
 public:
 	void update( int idx, GamePtr game );
-	void draw( int image );
-	int getX( );
+	void draw( int image ) const;
 	bool isOutSideScreen( );
 private:
+	enum JUDGE {
+		JUDGE_NONE,
+		JUDGE_GOOD,
+		JUDGE_PASS,
+		JUDGE_BAD,
+		JUDGE_MAX
+	};
 	struct CHIP_POS {
 		int tx;
 		int ty;
@@ -37,11 +43,16 @@ private:
 		}
 	};
 private:
+	JUDGE checkJudge( int idx, GamePtr game );
+private:
 	int _x;
+	int _y;
 	int _speed;
 	int _width;
 	int _height;
 	int _idx;
+	bool _turn;
+	int _count;
 	TYPE _type;
 	CHIP_POS _chip_pos[ MAX_TYPE ];
 };

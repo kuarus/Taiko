@@ -31,14 +31,13 @@ private:
 	};
 private:
 	void initialize( );
-	void updatePlay( );
-	void updateBullet( int idx );
+	void updatePlay( GamePtr game );
+	void updateBullet( int idx, GamePtr game );
 	void drawBg( );
 	void drawBarLine( ) const;
 	void drawBullet( ) const;
 	void drawTitle( ) const;
 	void createBullet( );
-	int getSoundIdx( ) const;
 private:
 	int _bg_image[ STATE::MAX_STATE ];
 	int _taiko_image;

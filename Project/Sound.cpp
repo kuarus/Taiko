@@ -9,8 +9,16 @@ Sound::~Sound( ) {
 }
 
 
-int Sound::loadSound( const char* filename ) {
+int Sound::load( const char* filename ) {
 	return LoadSoundMem( filename );
+}
+
+void Sound::playSE( int handle, bool loop ) {
+	int dx_type = DX_PLAYTYPE_BACK;
+	if ( loop ) {
+		dx_type = DX_PLAYTYPE_LOOP;
+	}
+	PlaySoundMem( handle, dx_type );
 }
 
 void Sound::playSound( int handle, bool loop ) {
@@ -21,16 +29,16 @@ void Sound::playSound( int handle, bool loop ) {
 	PlaySoundMem( handle, dx_type );
 }
 
-void Sound::stopSound( int handle ) {
+void Sound::stop( int handle ) {
 	StopSoundMem( handle );
 }
 
-void Sound::deleteSound( int handle ) {
+void Sound::destroy( int handle ) {
 	DeleteSoundMem( handle );
 }
 
-int Sound::getSoundPosition( int handle ) {
-	return GetSoundCurrentPosition( handle );
+int Sound::getTime( int handle ) {
+	return GetSoundCurrentTime( handle );
 }
 
 void Sound::changeVol( int vol, int handle ) {

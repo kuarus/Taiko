@@ -23,8 +23,8 @@ _music( 0 ) {
 
 SceneSongSelect::~SceneSongSelect( ) {
 	Drawer::deleteGraph( _bg_image );
-	Sound::stopSound( _music );
-	Sound::deleteSound( _music );
+	Sound::stop( _music );
+	Sound::destroy( _music );
 }
 
 void SceneSongSelect::update( GamePtr game ) {
@@ -92,11 +92,11 @@ void SceneSongSelect::drawSongList( ) {
 
 void SceneSongSelect::select( GamePtr game ) {
 	bool push = false;
-	if ( game->isLeft( ) ) {
+	if ( game->isKaLeft( ) ) {
 		_select--;
 		push = true;
 	}
-	if ( game->isRight( ) ) {
+	if ( game->isKaRight( ) ) {
 		_select++;
 		push = true;
 	}
@@ -112,10 +112,10 @@ void SceneSongSelect::select( GamePtr game ) {
 }
 
 void SceneSongSelect::audition( ) {
-	Sound::stopSound( _music );
+	Sound::stop( _music );
 	Songs::SONG music_data = _songs->getSongData( _select );
 	std::string music_file = music_data.directory + "/" + _songs->getMusicFileName( _select );
-	_music = Sound::loadSound( music_file.c_str( ) );
+	_music = Sound::load( music_file.c_str( ) );
 	Sound::playSound( _music, true );
 	Sound::changeVol( 90, _music );
 }

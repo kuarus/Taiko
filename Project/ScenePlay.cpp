@@ -8,8 +8,11 @@
 
 static const int WAIT_APPEAR_TIME = 40;
 static const int MUSIC_VOL = 80;
-static const int MAX_CODE = 64;
-static const int OFF_SET = 100;
+static const int MAX_CODE = 128;
+static const int OFF_SET = 118;
+static const int RATIO = 6;
+int a = 0;
+
 
 ScenePlay::ScenePlay( int select, SongsPtr songs ) :
 _state( STATE::STATE_NORMAL ),
@@ -24,7 +27,7 @@ _play_state( PLAY_STATE::PLAY_STATE_WAIT ) {
 	_taiko_image = Drawer::loadGraph( "Resource/img/notes.png" );
 	Songs::SONG music_data = songs->getSongData( select );
 	std::string music_file = music_data.directory + "/" + songs->getMusicFileName( select );
-	_music = Sound::loadSound( music_file.c_str( ) );
+	_music = Sound::load( music_file.c_str( ) );
 	_title = songs->getTitle( select );
 	_code_list = songs->getCode( select );
  	_offset = songs->getOffset( select );
@@ -39,8 +42,8 @@ ScenePlay::~ScenePlay( ) {
 		Drawer::deleteGraph( _bg_image[ i ] );
 	}
 	Drawer::deleteGraph( _taiko_image );
-	Sound::stopSound( _music );
-	Sound::deleteSound( _music );
+	Sound::stop( _music );
+	Sound::destroy( _music );
 }
 
 void ScenePlay::update( GamePtr game ) {
@@ -54,7 +57,7 @@ void ScenePlay::update( GamePtr game ) {
 		initialize( );
 		break;
 	case PLAY_STATE::PLAY_STATE_PLAY:
-		updatePlay( );
+		updatePlay( game );
 		break;
 	case PLAY_STATE::PLAY_STATE_END:
 		break;
@@ -73,6 +76,7 @@ void ScenePlay::draw( ) {
 	if ( _play_state == PLAY_STATE::PLAY_STATE_WAIT ) {
 		Drawer::drawString( 180, 240, "Pleas push SPACE key  start" );
 	}
+	Drawer::drawString( 0, 0, "%d", a );
 }
 
 void ScenePlay::initialize( ) {
@@ -81,22 +85,27 @@ void ScenePlay::initialize( ) {
 	_play_state = PLAY_STATE::PLAY_STATE_PLAY;
 }
 
-void ScenePlay::updatePlay( ) {
-	int idx = getSoundIdx( );
-	updateBullet( idx );
+void ScenePlay::updatePlay( GamePtr game ) {
+	int music_time = Sound::getTime( _music );
+	int idx = ( music_time * 106 / _bpm  + _offset / 15 ) * RATIO;
+	//if ( music_time == 1000 ) {
+	//	bpm = MAX_CODE * 60 
+	//}
+	a = idx;
+	updateBullet( idx, game );
 
 	_count++;
 	_count %= WAIT_APPEAR_TIME;
 }
 
-void ScenePlay::updateBullet( int idx ) {
+void ScenePlay::updateBullet( int idx, GamePtr game ) {
 	std::list< BulletPtr >::iterator ite = _bullets.begin( );
 	while ( ite != _bullets.end( ) ) {
 		BulletPtr bullet = *ite;
 		if ( !bullet ) {
 			continue;
 		}
-		bullet->update( idx );
+		bullet->update( idx, game );
 		if ( bullet->isOutSideScreen( ) ) {
 			ite = _bullets.erase( ite );
 			continue;
@@ -143,17 +152,7 @@ void ScenePlay::createBullet( ) {
 			if ( type > 4 || type == 0 ) {
 				continue;
 			}
-			_bullets.push_back( BulletPtr( new Bullet( (Bullet::TYPE)type, ( idx + OFF_SET ) * 10 ) ) );
+			_bullets.push_back( BulletPtr( new Bullet( (Bullet::TYPE)type, ( idx ) * RATIO ) ) );
 		}
 	}
-}
-
-int ScenePlay::getSoundIdx( ) const {
-	int idx = Sound::getSoundPosition( _music );
-	idx *= 3;
-	idx -= _offset;
-	idx -= OFF_SET;
-	idx /= _bpm;
-	//idx /= 100;
-	return idx;
 }

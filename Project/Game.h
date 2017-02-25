@@ -59,6 +59,7 @@ private:
 	GamePtr getThis( );
 	void changeScene( SCENE scene );
 	void updateKey( );
+	void updateSe( );
 private:
 	SCENE _scene;
 	SCENE _old_scene;

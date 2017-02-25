@@ -5,7 +5,7 @@ static const int MENU_X = 50;
 static const int MENU_Y = 50;
 static const int MENU_NUM = 3;
 static const int WAIT_TIME = 20;
-static const unsigned int MENU_COLOR = Drawer::getColor( 255, 50, 50 );
+static const unsigned int MENU_COLOR = Drawer::getColor( 255, 130, 70 );
 
 SceneMenu::SceneMenu( ) :
 _select( 0 ) {
@@ -68,11 +68,11 @@ void SceneMenu::draw( ) {
 }
 
 void SceneMenu::select( GamePtr game ) {
-	if ( game->isLeft( ) ) {
+	if ( game->isKaLeft( ) ) {
 		_select--;
 	}
 
-	if ( game->isRight( ) ) {
+	if ( game->isKaRight( ) ) {
 		_select++;
 	}
 	if ( _select > MENU_NUM - 1 ) {

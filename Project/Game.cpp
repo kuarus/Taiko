@@ -8,6 +8,7 @@
 #include "define.h"
 #include <assert.h>
 #include "Drawer.h"
+#include "Sound.h"
 
 Game::Game( ) :
 _scene( SCENE::SCENE_TITLE ),
@@ -21,7 +22,7 @@ _is_finish( false ){
 		return;
 	}
 
-	//SetBackgroundColor( 200, 0, 60 );
+	SetBackgroundColor( 255, 106, 106 );
 	SetDrawScreen( DX_SCREEN_BACK );
 	SetDrawMode( DX_DRAWMODE_BILINEAR ) ;
 	SetFontSize( FONT_SIZE );
@@ -29,8 +30,8 @@ _is_finish( false ){
 	for ( int i = 0; i < GRAPH_MAX; i++ ) {
 		_images[ i ] = 0;
 	}
-	_sound_dong = LoadSoundMem( "Resource/Sound/dong.wav" );
-	_sound_ka = LoadSoundMem( "Resource/Sound/ka.wav" );
+	_sound_dong = Sound::load( "Resource/Sound/dong.wav" );
+	_sound_ka = Sound::load( "Resource/Sound/ka.wav" );
 
 	_songs = SongsPtr( new Songs );
 	_scene_ptr = ScenePtr( new SceneTitle( ) );
@@ -90,17 +91,11 @@ bool Game::isBack( ) const {
 
 bool Game::isDongLeft( ) const {
 	bool result = isPushKey( KEY::KEY_F );
-	if ( result ) {
-		PlaySoundMem( _sound_dong, DX_PLAYTYPE_BACK );
-	}
 	return result;
 }
 
 bool Game::isDongRight( ) const {
 	bool result = isPushKey( KEY::KEY_J );
-	if ( result ) {
-		PlaySoundMem( _sound_dong, DX_PLAYTYPE_BACK );
-	}
 	return result;
 }
 
@@ -112,9 +107,6 @@ bool Game::isKaLeft( ) const {
 	if ( isPushKey( KEY::KEY_LEFT ) ) {
 		push = true;
 	}
-	if ( push ) {
-		PlaySoundMem( _sound_ka, DX_PLAYTYPE_BACK );
-	}
 	return push;
 }
 
@@ -125,9 +117,6 @@ bool Game::isKaRight( ) const {
 	}
 	if ( isPushKey( KEY::KEY_RIGHT ) ) {
 		push = true;
-	}
-	if ( push ) {
-		PlaySoundMem( _sound_ka, DX_PLAYTYPE_BACK );
 	}
 	return push;
 }
@@ -153,6 +142,8 @@ bool Game::isFinish( ) {
 }
 
 void Game::update( ) {
+	updateKey( );
+	updateSe( );
 	if ( _scene_ptr ) {
 		_scene_ptr->update( getThis( ) );
 		_scene_ptr->draw( );
@@ -161,8 +152,6 @@ void Game::update( ) {
 		changeScene( _scene );
 		_old_scene = _scene;
 	}
-	updateKey( );
-	updateSE( );
 }
 
 void Game::flip( ) const {
@@ -204,3 +193,17 @@ void Game::updateKey( ) {
 	}
 }
 
+void Game::updateSe( ) {
+	if ( isDongLeft( ) ) {
+		Sound::playSE( _sound_dong, false );
+	}
+	if ( isDongRight( ) ) {
+		Sound::playSE( _sound_dong, false );
+	}
+	if ( isKaLeft( ) ) {
+		Sound::playSE( _sound_ka, false );
+	}
+	if ( isKaRight( ) ) {
+		Sound::playSE( _sound_ka, false );
+	}
+}

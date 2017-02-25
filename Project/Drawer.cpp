@@ -32,8 +32,13 @@ void Drawer::drawVString( int x, int y, const char* str, bool selecting ) {
 	DrawVString( x, y, str, color, GetColor( 0, 0, 0 ) );
 }
 
-void Drawer::drawString( int x, int y, const char* str ) {
-	DrawString( x, y, str, GetColor( 255, 255, 255 ), GetColor( 0, 0, 0 ) );
+void Drawer::drawString( int x, int y, const char* str, ... ) {
+	char buf[ 1024 ];
+	va_list list;
+	va_start( list, str );
+	vsprintf_s( buf, 1024, str, list );
+	DrawString( x, y, buf, GetColor( 255, 255, 255 ), GetColor( 0, 0, 0 ) );
+	va_end( list );
 }
 
 int Drawer::loadGraph( const char* filename ) {
