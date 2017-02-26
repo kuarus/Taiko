@@ -10,6 +10,6 @@ public:
 	virtual ~Scene( );
 public:
 	virtual void update( GamePtr game ) = 0;
-	virtual void draw( ) { };
+	virtual void draw( GamePtr game ) { };
 };
 

@@ -38,7 +38,7 @@ void SceneSongSelect::update( GamePtr game ) {
 	}
 }
 
-void SceneSongSelect::draw( ) {
+void SceneSongSelect::draw( GamePtr game ) {
 	Drawer::drawGraph( 0, 0, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 512, 384, _bg_image );
 	drawSongList( );
 }

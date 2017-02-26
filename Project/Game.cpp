@@ -146,7 +146,7 @@ void Game::update( ) {
 	updateSe( );
 	if ( _scene_ptr ) {
 		_scene_ptr->update( getThis( ) );
-		_scene_ptr->draw( );
+		_scene_ptr->draw( getThis( ) );
 	}
 	if ( _old_scene != _scene ) {
 		changeScene( _scene );

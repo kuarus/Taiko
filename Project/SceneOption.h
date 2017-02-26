@@ -7,6 +7,6 @@ public:
 	virtual ~SceneOption( );
 public:
 	void update( GamePtr game );
-	void draw( );
+	void draw( GamePtr game );
 };
 

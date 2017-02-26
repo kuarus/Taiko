@@ -22,7 +22,7 @@ SceneTitle::~SceneTitle( ) {
 	}
 }
 
-void SceneTitle::draw( ) {
+void SceneTitle::draw( GamePtr game ) {
 	SetFontSize( FONT_SIZE * 4 );
 	int x = 50;
 	int y = 50;

@@ -6,8 +6,7 @@ static const int POSITION_Y = 200;
 static const int CHIP_SIZE = 64;
 static const int MOVE_SPEED = 30;
 static const int INIT_SPEED_Y = -20;
-static const int JUDGE_X = 35;
-static const int JUDGE_GOOD_RANGE = 20;
+static const int JUDGE_GOOD_RANGE = 5;
 
 Bullet::Bullet( TYPE type, int idx ) {
 	_type = type;
@@ -31,7 +30,7 @@ Bullet::~Bullet( ) {
 
 void Bullet::update( int idx, GamePtr game ) {
 	if ( !_turn ) {
-		_x = ( _idx - idx ) + JUDGE_X;
+		_x = ( _idx - idx ) * SPEED + JUDGE_X;
 	}
 	if ( _turn ) {
 		_x += MOVE_SPEED;
@@ -47,9 +46,12 @@ void Bullet::update( int idx, GamePtr game ) {
 }
 
 void Bullet::draw( int image ) const {
+	if ( _x > WINDOW_WIDTH + _width ) {
+		return;
+	}
 	int tx = _chip_pos[ _type ].tx;
 	int ty = _chip_pos[ _type ].ty;
-	Drawer::drawGraph( tx, ty, _x, _y, _x + _width, _y + _height, CHIP_SIZE, CHIP_SIZE, image );
+	Drawer::drawGraph( tx, ty, _x - _width / 2, _y, _x + _width - _width / 2, _y + _height, CHIP_SIZE, CHIP_SIZE, image );
 }
 
 Bullet::JUDGE Bullet::checkJudge( int idx, GamePtr game ) {

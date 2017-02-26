@@ -7,7 +7,7 @@ public:
 	virtual ~SceneTitle( );
 public:
 	void update( GamePtr game );
-	void draw( );
+	void draw( GamePtr game );
 private:
 	int _bg_image;
 };

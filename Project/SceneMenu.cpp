@@ -36,7 +36,7 @@ void SceneMenu::update( GamePtr game ) {
 	}
 }
 
-void SceneMenu::draw( ) {
+void SceneMenu::draw( GamePtr game ) {
 	int menu_width = 100;
 	int menu_height = 600;
 	int sx1 = MENU_X;

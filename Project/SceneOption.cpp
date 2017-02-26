@@ -13,5 +13,5 @@ void SceneOption::update( GamePtr game ) {
 	}
 }
 
-void SceneOption::draw( ) {
+void SceneOption::draw( GamePtr game ) {
 }

@@ -13,7 +13,7 @@ private:
 	};
 public:
 	void update( GamePtr game );
-	void draw( );
+	void draw( GamePtr game );
 	void select( GamePtr game );
 private:
 	int _select;
