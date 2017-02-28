@@ -6,11 +6,12 @@ static const int POSITION_Y = 200;
 static const int CHIP_SIZE = 64;
 static const int MOVE_SPEED = 30;
 static const int INIT_SPEED_Y = -20;
-static const int JUDGE_GOOD_RANGE = 5;
+static const int JUDGE_GREAT_RANGE = 2;
+static const int JUDGE_GOOD_RANGE = 4;
+static const int JUDGE_BAD_RANGE = 5;
 
-Bullet::Bullet( TYPE type, int idx ) {
-	_type = type;
-	_idx = idx;
+Bullet::Bullet( CODE code ) {
+	_code = code;
 	_turn = false;
 	_x = 2000;
 	_count = 0;
@@ -30,7 +31,7 @@ Bullet::~Bullet( ) {
 
 void Bullet::update( int idx, GamePtr game ) {
 	if ( !_turn ) {
-		_x = ( _idx - idx ) * SPEED + JUDGE_X;
+		_x = ( _code.idx - idx ) * SPEED + JUDGE_X;
 	}
 	if ( _turn ) {
 		_x += MOVE_SPEED;
@@ -40,24 +41,18 @@ void Bullet::update( int idx, GamePtr game ) {
 			_x = - 200;
 		}
 	}
-	if ( checkJudge( idx, game ) != JUDGE::JUDGE_NONE ) {
-		_turn = true;
-	}
 }
 
 void Bullet::draw( int image ) const {
-	if ( _x > WINDOW_WIDTH + _width ) {
-		return;
-	}
-	int tx = _chip_pos[ _type ].tx;
-	int ty = _chip_pos[ _type ].ty;
+	int tx = _chip_pos[ _code.type ].tx;
+	int ty = _chip_pos[ _code.type ].ty;
 	Drawer::drawGraph( tx, ty, _x - _width / 2, _y, _x + _width - _width / 2, _y + _height, CHIP_SIZE, CHIP_SIZE, image );
 }
 
 Bullet::JUDGE Bullet::checkJudge( int idx, GamePtr game ) {
 	Bullet::JUDGE result = JUDGE::JUDGE_NONE;
 	bool push = false;
-	switch ( _type ) {
+	switch ( _code.type ) {
 	case TYPE::TYPE_DONG:
 		if ( game->isDongLeft( ) || game->isDongRight( ) ) {
 			push = true;
@@ -80,16 +75,35 @@ Bullet::JUDGE Bullet::checkJudge( int idx, GamePtr game ) {
 		break;
 	}
 	if ( push ) {
-		int judge = _idx - idx;
+		int judge = _code.idx - idx;
+		if ( judge >= - JUDGE_BAD_RANGE && judge <= JUDGE_BAD_RANGE ) {
+			result = JUDGE::JUDGE_BAD;
+		}
 		if ( judge >= - JUDGE_GOOD_RANGE && judge <= JUDGE_GOOD_RANGE ) {
-			//‘¾ŒÛ‚ð‚½‚½‚¢‚½Žž‚Ì”»’è–¢ŽÀ‘•
 			result = JUDGE::JUDGE_GOOD;
 		}
-		
+		if ( judge >= - JUDGE_GREAT_RANGE && judge <= JUDGE_GREAT_RANGE ) {
+			result = JUDGE::JUDGE_GREAT;
+		}
+	}
+	if ( _code.idx - idx < -10 ) {
+		result = JUDGE::JUDGE_THROUGH;
 	}
 	return result;
 }
 
 bool Bullet::isOutSideScreen( ) {
 	return _x < -_width;
+}
+
+int Bullet::getIdx( ) {
+	return _code.idx;
+}
+
+void Bullet::setTurn( ) {
+	_turn = true;
+}
+
+bool Bullet::isTurn( ) {
+	return _turn;
 }

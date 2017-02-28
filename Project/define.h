@@ -6,7 +6,7 @@
 const int WINDOW_WIDTH = 1080;
 const int WINDOW_HEIGHT = 720;
 const int FONT_SIZE = 40;
-const int SPEED = 8;
+const int SPEED = 7;
 const int JUDGE_X = 220;
 
 enum GRAPH {

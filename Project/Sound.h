@@ -6,7 +6,8 @@ public:
 public:
 	static int load( const char* filename );
 	static void playSE( int handle, bool loop );
-	static void playSound( int handle, bool loop );
+	static void playMusic( int handle, bool loop );
+	static bool isPlayingMusic( int handle );
 	static void stop( int handle );
 	static void destroy( int handle );
 	static int getTime( int handle );

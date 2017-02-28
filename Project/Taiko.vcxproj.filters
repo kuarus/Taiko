@@ -48,6 +48,9 @@
     <ClCompile Include="Bullet.cpp">
       <Filter>Taiko</Filter>
     </ClCompile>
+    <ClCompile Include="SceneResult.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scene.h">
@@ -88,6 +91,9 @@
     </ClInclude>
     <ClInclude Include="Bullet.h">
       <Filter>Taiko</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneResult.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

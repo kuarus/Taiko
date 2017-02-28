@@ -2,6 +2,7 @@
 #include "Scene.h"
 #include <list>
 #include <string>
+#include "Bullet.h"
 
 PTR( Songs );
 PTR( Bullet );
@@ -39,11 +40,29 @@ private:
 		IMAGE_MTAIKO,
 		IMAGE_MTAIKO_DONG,
 		IMAGE_MTAIKO_KA,
+		IMAGE_COMBO_NUM,
+		IMAGE_JUDGE,
+		IMAGE_EXPLOSION,
 		MAX_IMAGE
+	};
+	enum COMBO {
+		COMBO_50,
+		COMBO_100,
+		COMBO_200,
+		COMBO_300,
+		COMBO_400,
+		COMBO_500,
+		COMBO_600,
+		COMBO_700,
+		COMBO_800,
+		COMBO_900,
+		COMBO_FULL,
+		MAX_COMBO,
 	};
 private:
 	void initialize( );
 	void loadImages( );
+	void loadSounds( );
 	void updatePlay( GamePtr game );
 	void updateBullet( int idx, GamePtr game );
 	void drawBg( );
@@ -51,21 +70,31 @@ private:
 	void drawBullet( ) const;
 	void drawTitle( ) const;
 	void drawMTaiko( GamePtr game ) const;
-	void createBullet( );
+	void drawJudge( );
+	void drawExplosion( );
+	void drawCombo( int num ) const;
+	void loadBullet( SongsPtr songs, int select );
+	void setJudge( Bullet::JUDGE judge );
+	void creatBullet( );
+	void playComboSound( );
+	void addScore( );
 private:
 	int _image[ IMAGE::MAX_IMAGE ];
 	STATE _state;
 	PLAY_STATE _play_state;
-	int _count;
 	int _music;
 	std::list< BulletPtr > _bullets;
 	std::string _title;
-	std::vector< std::vector< char > > _code_list;
+	std::vector< Bullet::CODE > _codes;
 	int _offset;
 	bool _start;
+	int _combo_sound[ COMBO::MAX_COMBO ];
 	int _before_seq;
 	int _dong;
-	int _bpm;
+	int _pitch;
 	int _idx;
+	Game::RESULT _result;
+	Bullet::JUDGE _judge;
+	int _judge_count;
 };
 

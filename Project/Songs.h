@@ -19,7 +19,7 @@ public:
 	SONG getSongData( int idx ) const;
 	int getLevel( int idx ) const;
 	std::vector< std::vector< char > > getCode( int idx ) const;
-	int getBpm( int idx ) const;
+	int getPitch( int idx ) const;
 	int getOffset( int idx ) const;
 private:
 	void sarchFile( );

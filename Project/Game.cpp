@@ -5,6 +5,7 @@
 #include "SceneOption.h"
 #include "SceneSongSelect.h"
 #include "ScenePlay.h"
+#include "SceneResult.h"
 #include "define.h"
 #include <assert.h>
 #include "Drawer.h"
@@ -51,6 +52,10 @@ void Game::run( ) {
 
 void Game::setFinish( ) {
 	_is_finish = true;
+}
+
+void Game::setResult( RESULT result ) {
+	_result = result;
 }
 
 bool Game::isPushKey( int key ) const {
@@ -136,7 +141,7 @@ bool Game::isFinish( ) {
 		}
 	}
 	if ( isPushKey( KEY::KEY_ESCAPE ) ) {
-		_is_finish = true;
+		//_is_finish = true;
 	}
 	return _is_finish;
 }
@@ -179,6 +184,10 @@ void Game::changeScene( SCENE scene ) {
 		break;
 	case SCENE::SCENE_PLAY:
 		_scene_ptr.reset( new ScenePlay( _selecting_song, _songs ) );
+		break;
+	case SCENE::SCENE_RESULT:
+		_scene_ptr.reset( new SceneResult( _result ) );
+		break;
 	}
 }
 
@@ -205,5 +214,8 @@ void Game::updateSe( ) {
 	}
 	if ( isKaRight( ) ) {
 		Sound::playSE( _sound_ka, false );
+	}
+	if ( isPushKey( KEY::KEY_SPACE ) ) {
+		Sound::playSE( _sound_dong, false );
 	}
 }

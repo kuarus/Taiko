@@ -15,6 +15,7 @@
     <ClCompile Include="Drawer.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="ScenePlay.cpp" />
+    <ClCompile Include="SceneResult.cpp" />
     <ClCompile Include="Songs.cpp" />
     <ClCompile Include="Sound.cpp" />
     <ClCompile Include="WinMain.cpp" />
@@ -33,6 +34,7 @@
     <ClInclude Include="SceneMenu.h" />
     <ClInclude Include="SceneOption.h" />
     <ClInclude Include="ScenePlay.h" />
+    <ClInclude Include="SceneResult.h" />
     <ClInclude Include="SceneSongSelect.h" />
     <ClInclude Include="smart_ptr.h" />
     <ClInclude Include="SceneTitle.h" />

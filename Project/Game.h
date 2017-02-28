@@ -21,6 +21,7 @@ public:
 		SCENE_SONG_SELECT,
 		SCENE_PLAY,
 		SCENE_OPTION,
+		SCENE_RESULT,
 		MAX_SCENE,
 	};
 	enum KEY {
@@ -36,6 +37,16 @@ public:
 		KEY_ESCAPE = KEY_INPUT_ESCAPE,
 		MAX_KEY
 	};
+	struct RESULT {
+		int combo;
+		int max_combo;
+		int score;
+		RESULT( ) {
+			this->combo = 0;
+			this->max_combo = 0;
+			this->score = 0;
+		}
+	};
 public:
 	static std::shared_ptr< Game > getPtr( );
 	static void initialize( );
@@ -44,6 +55,7 @@ public:
 	void setSelectSong( int select );
 	void run( );
 	void setFinish( );
+	void setResult( RESULT result );
 	bool isPushKey( int key ) const;
 	bool isHoldKey( int key ) const;
 	bool isNext( ) const;
@@ -69,6 +81,7 @@ private:
 	int _selecting_song;
 	int _sound_dong;
 	int _sound_ka;
+	RESULT _result;
 	bool _is_finish;
 	char _key[ 256 ];
 };

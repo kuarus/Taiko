@@ -15,21 +15,30 @@ public:
 		TYPE_REPEATE,
 		MAX_TYPE
 	};
+	enum JUDGE {
+		JUDGE_NONE,
+		JUDGE_GREAT,
+		JUDGE_GOOD,
+		JUDGE_BAD,
+		JUDGE_THROUGH,
+		JUDGE_MAX
+	};
+	struct CODE {
+		int idx;
+		TYPE type;
+	};
 public:
-	Bullet( TYPE type, int idx );
+	Bullet( CODE code );
 	virtual ~Bullet( );
 public:
 	void update( int idx, GamePtr game );
 	void draw( int image ) const;
 	bool isOutSideScreen( );
+	JUDGE checkJudge( int idx, GamePtr game );
+	int getIdx( );
+	void setTurn( );
+	bool isTurn( );
 private:
-	enum JUDGE {
-		JUDGE_NONE,
-		JUDGE_GOOD,
-		JUDGE_PASS,
-		JUDGE_BAD,
-		JUDGE_MAX
-	};
 	struct CHIP_POS {
 		int tx;
 		int ty;
@@ -43,17 +52,14 @@ private:
 		}
 	};
 private:
-	JUDGE checkJudge( int idx, GamePtr game );
-private:
 	int _x;
 	int _y;
 	int _speed;
 	int _width;
 	int _height;
-	int _idx;
 	bool _turn;
 	int _count;
-	TYPE _type;
+	CODE _code;
 	CHIP_POS _chip_pos[ MAX_TYPE ];
 };
 

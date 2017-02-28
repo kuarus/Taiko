@@ -160,25 +160,25 @@ std::vector< std::vector< char > > Songs::getCode( int idx ) const {
 	return code;
 }
 
-int Songs::getBpm( int idx ) const {
-	int bpm = 0;
+int Songs::getPitch( int idx ) const {
+	int pitch = 100;
 	std::string tmp;
 	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
 	std::ifstream ifs( file_name );
 	if ( ifs.fail( ) ) {
-		return bpm;
+		return pitch;
 	}
 
 	while ( getline( ifs, tmp ) ) {
-		if ( strstr( tmp.c_str( ), "BPM:" ) != NULL ) {
-			tmp.replace( 0, 4, "" );
+		if ( strstr( tmp.c_str( ), "PITCH:" ) != NULL ) {
+			tmp.replace( 0, 6, "" );
+			double d_pitch = std::stod( tmp, 0 );
+			d_pitch *= 100;
+			pitch = (int)d_pitch;
 			break;
 		}
 	}
-	double d_bpm = std::stod( tmp, 0 );
-	d_bpm *= 10;
-	bpm = (int)d_bpm;
-	return bpm;
+	return pitch;
 }
 
 int Songs::getOffset( int idx ) const {

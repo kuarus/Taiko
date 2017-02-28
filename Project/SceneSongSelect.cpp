@@ -82,7 +82,10 @@ void SceneSongSelect::drawSongList( ) {
 
 	for ( int i = 0; i < VIEW_NUM; i++ ) {
 		int idx0 = ( _select + i + 1 ) % list_size;
-		int idx1 = ( _select - i - 1 + list_size ) % list_size;
+		int idx1 = ( _select - i - 1 ) % list_size;
+		if ( idx1 < 0 ) {
+			idx1 += list_size;
+		}
 		int x0 = SELECTING_X + SELECTING_WIDTH + INTERVAL + i * ( menu_width + INTERVAL );
 		int x1 = SELECTING_X - INTERVAL - menu_width - i * ( menu_width + INTERVAL );
 		drawSong( x0, MENU_Y, x0 + menu_width, MENU_HEIGHT, menu_color, idx0 );
@@ -116,6 +119,6 @@ void SceneSongSelect::audition( ) {
 	Songs::SONG music_data = _songs->getSongData( _select );
 	std::string music_file = music_data.directory + "/" + _songs->getMusicFileName( _select );
 	_music = Sound::load( music_file.c_str( ) );
-	Sound::playSound( _music, true );
+	Sound::playMusic( _music, true );
 	Sound::changeVol( 90, _music );
 }
