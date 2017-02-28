@@ -8,7 +8,7 @@ static const int MOVE_SPEED = 30;
 static const int INIT_SPEED_Y = -20;
 static const int JUDGE_GREAT_RANGE = 2;
 static const int JUDGE_GOOD_RANGE = 4;
-static const int JUDGE_BAD_RANGE = 5;
+static const int JUDGE_BAD_RANGE = 6;
 
 Bullet::Bullet( CODE code, int num ) {
 	_num = num;
@@ -52,30 +52,8 @@ void Bullet::draw( int image ) const {
 
 Bullet::JUDGE Bullet::checkJudge( int idx, GamePtr game ) const {
 	Bullet::JUDGE result = JUDGE::JUDGE_NONE;
-	bool push = false;
-	switch ( _code.type ) {
-	case TYPE::TYPE_DONG:
-		if ( game->isDongLeft( ) || game->isDongRight( ) ) {
-			push = true;
-		}
-		break;
-	case TYPE::TYPE_KA:
-		if ( game->isKaLeft( ) || game->isKaRight( ) ) {
-			push = true;
-		}
-		break;
-	case TYPE::TYPE_BIG_DONG:
-		if ( game->isDongLeft( ) || game->isDongRight( ) ) {
-			push = true;
-		}
-		break;
-	case TYPE::TYPE_BIG_KA:
-		if ( game->isKaLeft( ) || game->isKaRight( ) ) {
-			push = true;
-		}
-		break;
-	}
-	if ( push ) {
+	
+	if ( checkPush( idx, game ) ) {
 		int judge = _code.idx - idx;
 		if ( judge >= - JUDGE_BAD_RANGE && judge <= JUDGE_BAD_RANGE ) {
 			result = JUDGE::JUDGE_BAD;
@@ -107,4 +85,51 @@ void Bullet::setTurn( ) {
 
 bool Bullet::isTurn( ) const {
 	return _turn;
+}
+
+bool Bullet::checkPush( int idx, GamePtr game ) const {
+	bool push = false;
+	bool automatic_just = false;
+	int diff = _code.idx - idx;
+	if ( diff < 0 ) {
+		diff *= -1;
+	}
+	if ( game->isAutomatic( ) && diff <= 1 ) {
+		automatic_just = true;
+	}
+	switch ( _code.type ) {
+	case TYPE::TYPE_DONG:
+		if ( automatic_just ) {
+			game->setKey( Game::SE::SE_DONG );
+		}
+		if ( game->isDongLeft( ) || game->isDongRight( ) ) {
+			push = true;
+		}
+		break;
+	case TYPE::TYPE_KA:
+		if ( automatic_just ) {
+			game->setKey( Game::SE::SE_KA );
+		}
+		if ( game->isKaLeft( ) || game->isKaRight( ) ) {
+			push = true;
+		}
+		break;
+	case TYPE::TYPE_BIG_DONG:
+		if ( automatic_just ) {
+			game->setKey( Game::SE::SE_DONG );
+		}
+		if ( game->isDongLeft( ) || game->isDongRight( ) ) {
+			push = true;
+		}
+		break;
+	case TYPE::TYPE_BIG_KA:
+		if ( automatic_just ) {
+			game->setKey( Game::SE::SE_KA );
+		}
+		if ( game->isKaLeft( ) || game->isKaRight( ) ) {
+			push = true;
+		}
+		break;
+	}
+	return push;
 }

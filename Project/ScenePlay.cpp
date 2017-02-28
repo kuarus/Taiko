@@ -84,7 +84,7 @@ void ScenePlay::draw( GamePtr game ) {
 	drawJudge( );
 	drawTitle( );
 	drawCombo( _result.combo );
-	drawNote( );
+	drawNote( game );
 }
 
 void ScenePlay::initialize( ) {
@@ -122,7 +122,6 @@ void ScenePlay::loadSounds( ) {
 }
 
 void ScenePlay::updatePlay( GamePtr game ) {
-	creatBullet( );
 	int now = Sound::getTime( _music );
 	int seq = ( now - OFFSET + _offset ) * 100 / _pitch;
 	int mark = _idx * 128;
@@ -132,17 +131,19 @@ void ScenePlay::updatePlay( GamePtr game ) {
 	}
 	_before_seq = seq;
 	updateBullet( seq, game );
+	creatBullet( );
 	if ( !Sound::isPlayingMusic( _music ) ) {
 		_play_state = PLAY_STATE::PLAY_STATE_END;
 	}
 }
 
 void ScenePlay::updateBullet( int idx, GamePtr game ) {
-	std::list< BulletPtr >::iterator ite = _bullets.begin( );
+	std::list< BulletPtr >::const_iterator ite = _bullets.begin( );
 	std::list< BulletPtr > hits;
 	while ( ite != _bullets.end( ) ) {
 		BulletPtr bullet = *ite;
 		if ( !bullet ) {
+			ite++;
 			continue;
 		}
 		bullet->update( idx, game );
@@ -302,20 +303,25 @@ void ScenePlay::drawCombo( int num ) const {
 	}
 }
 
-void ScenePlay::drawNote( ) const {
+void ScenePlay::drawNote( GamePtr game ) const {
 	if ( _play_state == PLAY_STATE::PLAY_STATE_WAIT ) {
 		Drawer::drawString( 350, 240, "Pleas push SPACE key  start" );
+	}
+	if ( game->isAutomatic( ) ) {
+		Drawer::drawString( 0, 0, "オート中" );
 	}
 
 	Drawer::drawString( 800, 10, "SCORE:%d", _result.score );
 
 	int y = 400;
-	Drawer::drawBox( 350, y - 10, 1000, y + FONT_SIZE * 4, Drawer::getColor( 200, 55, 55 ) );
+	Drawer::drawBox( 350, y - 10, 1000, y + FONT_SIZE * 5, Drawer::getColor( 200, 55, 55 ) );
 	Drawer::drawString( 400, y, "ドン:<F><J>" );
 	y += FONT_SIZE;
 	Drawer::drawString( 400, y, "カッ:<D><K>" );
 	y += FONT_SIZE;
 	Drawer::drawString( 400, y, "終了:<Q><BackSpace><Escape>" );
+	y += FONT_SIZE;
+	Drawer::drawString( 400, y, "オート:<1>" );
 }
 
 void ScenePlay::loadBullet( SongsPtr songs, int select ) {
@@ -323,14 +329,17 @@ void ScenePlay::loadBullet( SongsPtr songs, int select ) {
 	int code_list_size = code_list.size( );
 	for ( int i = 0; i < code_list_size; i++ ) {
 		int code_size = code_list[ i ].size( );
+		int size = 0;
+		if ( code_size != 0 ) {
+			size = MAX_CODE / code_size;
+		}
 		for ( int j = 0; j < code_size; j++ ) {
-			int size = MAX_CODE / code_size;
-			int type = code_list[ i ][ j ];
-			int idx = ( MAX_CODE * i ) + ( j * size );
+			char type = code_list[ i ][ j ];
 			if ( type > 4 || type == 0 ) {
 				continue;
 			}
-			Bullet::CODE code;
+			int idx = ( MAX_CODE * i ) + ( j * size );
+			Bullet::CODE code = Bullet::CODE( );
 			code.idx = idx;
 			code.type = (Bullet::TYPE)type;
 			_codes.push_back( code );
@@ -358,8 +367,7 @@ void ScenePlay::setJudge( Bullet::JUDGE judge ) {
 	}
 }
 void ScenePlay::creatBullet( ) {
-
-	std::vector< Bullet::CODE >::iterator ite = _codes.begin( );
+	std::vector< Bullet::CODE >::const_iterator ite = _codes.begin( );
 	while ( ite != _codes.end( ) ) {
 		Bullet::CODE code = *ite;
 		if ( code.idx < _before_seq + LOAD_IDX && code.idx >= 0 ) {
@@ -416,4 +424,8 @@ void ScenePlay::addScore( ) {
 			_result.score += GOOD_SCORE;
 			break;
 	}
+}
+
+void ScenePlay::autoPlay( ) {
+
 }

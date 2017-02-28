@@ -73,12 +73,13 @@ private:
 	void drawJudge( );
 	void drawExplosion( );
 	void drawCombo( int num ) const;
-	void drawNote( ) const;
+	void drawNote( GamePtr game ) const;
 	void loadBullet( SongsPtr songs, int select );
 	void setJudge( Bullet::JUDGE judge );
 	void creatBullet( );
 	void playComboSound( );
 	void addScore( );
+	void autoPlay( );
 private:
 	int _image[ IMAGE::MAX_IMAGE ];
 	STATE _state;

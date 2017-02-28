@@ -2,6 +2,7 @@
 #include "DxLib.h"
 #include <Windows.h>
 #include <fstream>
+#include <assert.h>
 
 static const std::string DIRECTORY = "Resource/Songs/";
 static const std::string EXTENTION = "tja";
@@ -101,7 +102,7 @@ Songs::SONG Songs::getSongData( int idx ) const {
 
 int Songs::getLevel( int idx ) const {
 	int level = 0;
-	std::string level_str = "";
+	std::string level_str;
 	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
 	std::ifstream ifs( file_name );
 	if ( ifs.fail( ) ) {
@@ -119,38 +120,37 @@ int Songs::getLevel( int idx ) const {
 
 std::vector< std::vector< char > > Songs::getCode( int idx ) const {
 	std::vector< std::vector< char > > code;
-	std::string tmp_str = "";
+	std::string tmp_str;
 	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
 	std::ifstream ifs( file_name );
 	if ( ifs.fail( ) ) {
 		return code;
 	}
 	bool start = false;
-	while ( getline( ifs, tmp_str ) ) {
+	while ( std::getline( ifs, tmp_str ) ) {
 		if ( !start ) {
-			if ( strstr( tmp_str.c_str( ), "#START" ) != NULL ) {
+			if ( std::strstr( tmp_str.c_str( ), "#START" ) != NULL ) {
 				start = true;
 				continue;
 			}
 		}
-		if ( strstr( tmp_str.c_str( ), "#END" ) != NULL ) {
+		if ( std::strstr( tmp_str.c_str( ), "#END" ) != NULL ) {
 			break;
 		}
-		if ( strstr( tmp_str.c_str( ), "#" ) != NULL ) {
+		if ( std::strstr( tmp_str.c_str( ), "#" ) != NULL ) {
 			continue;
 		}
 		if ( start ) {
-			std::string::iterator ite = tmp_str.begin( );
-			int count = 0;
+			std::string::const_iterator ite = tmp_str.begin( );
 			std::vector< char > tmp;
+			int size = tmp_str.size( );
+			assert( size != 13 ); 
 			while ( ite != tmp_str.end( ) ) {
 				char str = (*ite);
 				if ( strstr( (const char*)&str, "," ) ) {
-					ite++;
 					break;
 				}
 				tmp.push_back( atoi( (const char*)&str ) );
-				count++;
 				ite++;
 			}
 			code.push_back( tmp );

@@ -104,9 +104,10 @@ void SceneSongSelect::select( GamePtr game ) {
 		push = true;
 	}
 	std::vector< Songs::SONG > song_list = _songs->getSongList( );
-	_select %= song_list.size( );
+	int list_size = song_list.size( );
+	_select %= list_size;
 	if ( _select < 0 ) {
-		_select += song_list.size( );
+		_select += list_size;
 	}
 
 	if ( push ) {
@@ -120,5 +121,5 @@ void SceneSongSelect::audition( ) {
 	std::string music_file = music_data.directory + "/" + _songs->getMusicFileName( _select );
 	_music = Sound::load( music_file.c_str( ) );
 	Sound::playMusic( _music, true );
-	Sound::changeVol( 90, _music );
+	Sound::changeVol( 210, _music );
 }
