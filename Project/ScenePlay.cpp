@@ -54,12 +54,18 @@ void ScenePlay::update( GamePtr game ) {
 		if ( game->isPushKey( Game::KEY::KEY_SPACE ) ) {
 			_play_state = PLAY_STATE::PLAY_STATE_INIT;
 		}
+		if ( game->isBack( ) ) {
+			game->setScene( Game::SCENE::SCENE_SONG_SELECT );
+		}
 		break;
 	case PLAY_STATE::PLAY_STATE_INIT:
 		initialize( );
 		break;
 	case PLAY_STATE::PLAY_STATE_PLAY:
 		updatePlay( game );
+		if ( game->isBack( ) ) {
+			_play_state = PLAY_STATE::PLAY_STATE_END;
+		}
 		break;
 	case PLAY_STATE::PLAY_STATE_END:
 		game->setResult( _result );
@@ -67,9 +73,6 @@ void ScenePlay::update( GamePtr game ) {
 		break;
 	}
 
-	if ( game->isBack( ) ) {
-		_play_state = PLAY_STATE::PLAY_STATE_END;
-	}
 }
 
 void ScenePlay::draw( GamePtr game ) {
@@ -81,19 +84,7 @@ void ScenePlay::draw( GamePtr game ) {
 	drawJudge( );
 	drawTitle( );
 	drawCombo( _result.combo );
-	if ( _play_state == PLAY_STATE::PLAY_STATE_WAIT ) {
-		Drawer::drawString( 350, 240, "Pleas push SPACE key  start" );
-	}
-
-	Drawer::drawString( 800, 10, "SCORE:%d", _result.score );
-
-	int y = 400;
-	Drawer::drawBox( 350, y - 10, 1000, y + FONT_SIZE * 4, Drawer::getColor( 200, 55, 55 ) );
-	Drawer::drawString( 400, y, "ドン:<F><J>" );
-	y += FONT_SIZE;
-	Drawer::drawString( 400, y, "カッ:<D><K>" );
-	y += FONT_SIZE;
-	Drawer::drawString( 400, y, "終了:<Q><BackSpace><Escape>" );
+	drawNote( );
 }
 
 void ScenePlay::initialize( ) {
@@ -131,6 +122,7 @@ void ScenePlay::loadSounds( ) {
 }
 
 void ScenePlay::updatePlay( GamePtr game ) {
+	creatBullet( );
 	int now = Sound::getTime( _music );
 	int seq = ( now - OFFSET + _offset ) * 100 / _pitch;
 	int mark = _idx * 128;
@@ -140,7 +132,6 @@ void ScenePlay::updatePlay( GamePtr game ) {
 	}
 	_before_seq = seq;
 	updateBullet( seq, game );
-	creatBullet( );
 	if ( !Sound::isPlayingMusic( _music ) ) {
 		_play_state = PLAY_STATE::PLAY_STATE_END;
 	}
@@ -253,7 +244,8 @@ void ScenePlay::drawMTaiko( GamePtr game ) const {
 }
 
 void ScenePlay::drawJudge( ) {
-	if ( _judge != Bullet::JUDGE::JUDGE_NONE ) {
+	if ( _judge != Bullet::JUDGE::JUDGE_NONE &&
+		 _judge != Bullet::JUDGE::JUDGE_THROUGH ) {
 		int chip_size = 50;
 		int tx = 0;
 		int ty = 0;
@@ -281,8 +273,8 @@ void ScenePlay::drawJudge( ) {
 }
 
 void ScenePlay::drawExplosion( ) {
-	if ( _judge != Bullet::JUDGE::JUDGE_NONE && 
-		 _judge != Bullet::JUDGE::JUDGE_BAD ) {
+	if ( _judge == Bullet::JUDGE::JUDGE_GREAT ||
+		 _judge == Bullet::JUDGE::JUDGE_GOOD ) {
 		const int CHIP_SIZE = 128;
 		int tx = _judge_count / ( EXPLOSION_DRAW_TIME / 18 );
 		int ty = 2 ;
@@ -308,6 +300,22 @@ void ScenePlay::drawCombo( int num ) const {
 		int x2 = x1 + 30;
 		Drawer::drawGraph( number, 0, x1, y1, x2, y2, WIDTH, HEIGHT, _image[ IMAGE::IMAGE_COMBO_NUM ] );
 	}
+}
+
+void ScenePlay::drawNote( ) const {
+	if ( _play_state == PLAY_STATE::PLAY_STATE_WAIT ) {
+		Drawer::drawString( 350, 240, "Pleas push SPACE key  start" );
+	}
+
+	Drawer::drawString( 800, 10, "SCORE:%d", _result.score );
+
+	int y = 400;
+	Drawer::drawBox( 350, y - 10, 1000, y + FONT_SIZE * 4, Drawer::getColor( 200, 55, 55 ) );
+	Drawer::drawString( 400, y, "ドン:<F><J>" );
+	y += FONT_SIZE;
+	Drawer::drawString( 400, y, "カッ:<D><K>" );
+	y += FONT_SIZE;
+	Drawer::drawString( 400, y, "終了:<Q><BackSpace><Escape>" );
 }
 
 void ScenePlay::loadBullet( SongsPtr songs, int select ) {
@@ -349,8 +357,8 @@ void ScenePlay::setJudge( Bullet::JUDGE judge ) {
 		_result.combo = 0;
 	}
 }
-
 void ScenePlay::creatBullet( ) {
+
 	std::vector< Bullet::CODE >::iterator ite = _codes.begin( );
 	while ( ite != _codes.end( ) ) {
 		Bullet::CODE code = *ite;

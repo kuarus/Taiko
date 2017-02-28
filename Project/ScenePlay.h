@@ -73,6 +73,7 @@ private:
 	void drawJudge( );
 	void drawExplosion( );
 	void drawCombo( int num ) const;
+	void drawNote( ) const;
 	void loadBullet( SongsPtr songs, int select );
 	void setJudge( Bullet::JUDGE judge );
 	void creatBullet( );

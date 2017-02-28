@@ -28,16 +28,16 @@ public:
 		TYPE type;
 	};
 public:
-	Bullet( CODE code );
+	Bullet( CODE code, int num = 0 );
 	virtual ~Bullet( );
 public:
 	void update( int idx, GamePtr game );
 	void draw( int image ) const;
-	bool isOutSideScreen( );
-	JUDGE checkJudge( int idx, GamePtr game );
-	int getIdx( );
+	bool isOutSideScreen( ) const;
+	JUDGE checkJudge( int idx, GamePtr game ) const;
+	int getIdx( ) const;
 	void setTurn( );
-	bool isTurn( );
+	bool isTurn( ) const;
 private:
 	struct CHIP_POS {
 		int tx;
@@ -59,6 +59,7 @@ private:
 	int _height;
 	bool _turn;
 	int _count;
+	int _num;
 	CODE _code;
 	CHIP_POS _chip_pos[ MAX_TYPE ];
 };

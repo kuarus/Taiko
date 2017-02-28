@@ -10,7 +10,8 @@ static const int JUDGE_GREAT_RANGE = 2;
 static const int JUDGE_GOOD_RANGE = 4;
 static const int JUDGE_BAD_RANGE = 5;
 
-Bullet::Bullet( CODE code ) {
+Bullet::Bullet( CODE code, int num ) {
+	_num = num;
 	_code = code;
 	_turn = false;
 	_x = 2000;
@@ -49,7 +50,7 @@ void Bullet::draw( int image ) const {
 	Drawer::drawGraph( tx, ty, _x - _width / 2, _y, _x + _width - _width / 2, _y + _height, CHIP_SIZE, CHIP_SIZE, image );
 }
 
-Bullet::JUDGE Bullet::checkJudge( int idx, GamePtr game ) {
+Bullet::JUDGE Bullet::checkJudge( int idx, GamePtr game ) const {
 	Bullet::JUDGE result = JUDGE::JUDGE_NONE;
 	bool push = false;
 	switch ( _code.type ) {
@@ -92,11 +93,11 @@ Bullet::JUDGE Bullet::checkJudge( int idx, GamePtr game ) {
 	return result;
 }
 
-bool Bullet::isOutSideScreen( ) {
+bool Bullet::isOutSideScreen( ) const {
 	return _x < -_width;
 }
 
-int Bullet::getIdx( ) {
+int Bullet::getIdx( ) const {
 	return _code.idx;
 }
 
@@ -104,6 +105,6 @@ void Bullet::setTurn( ) {
 	_turn = true;
 }
 
-bool Bullet::isTurn( ) {
+bool Bullet::isTurn( ) const {
 	return _turn;
 }
