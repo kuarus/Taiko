@@ -26,6 +26,10 @@ public:
 	struct CODE {
 		int idx;
 		TYPE type;
+		CODE( ) {
+			this->idx = 0;
+			this->type = TYPE::TYPE_NONE;
+		}
 	};
 public:
 	Bullet( CODE code, int num = 0 );
@@ -51,6 +55,8 @@ private:
 			this->ty = y;
 		}
 	};
+private:
+	bool checkPush( int idx, GamePtr game ) const;
 private:
 	int _x;
 	int _y;

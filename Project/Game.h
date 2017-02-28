@@ -25,6 +25,7 @@ public:
 		MAX_SCENE,
 	};
 	enum KEY {
+		KEY_1 = KEY_INPUT_1,
 		KEY_D = KEY_INPUT_D,
 		KEY_F = KEY_INPUT_F,
 		KEY_J = KEY_INPUT_J,
@@ -36,6 +37,11 @@ public:
 		KEY_RIGHT = KEY_INPUT_RIGHT,
 		KEY_ESCAPE = KEY_INPUT_ESCAPE,
 		MAX_KEY
+	};
+	enum SE {
+		SE_DONG,
+		SE_KA,
+		MAX_SE,
 	};
 	struct RESULT {
 		int combo;
@@ -56,6 +62,7 @@ public:
 	void run( );
 	void setFinish( );
 	void setResult( RESULT result );
+	void setKey( SE se );
 	bool isPushKey( int key ) const;
 	bool isHoldKey( int key ) const;
 	bool isNext( ) const;
@@ -64,7 +71,9 @@ public:
 	bool isDongRight( ) const;
 	bool isKaLeft( ) const;
 	bool isKaRight( ) const;
+	bool isAutomatic( ) const;
 private:
+	void changeAutomatic( );
 	bool isFinish( );
 	void update( );
 	void flip( ) const;
@@ -79,9 +88,10 @@ private:
 	SongsPtr _songs;
 	std::array< int, GRAPH_MAX > _images;
 	int _selecting_song;
-	int _sound_dong;
-	int _sound_ka;
+	int _se[ SE::MAX_SE ];
 	RESULT _result;
 	bool _is_finish;
+	bool _auto;
+	bool _automatic[ SE::MAX_SE ];
 	char _key[ 256 ];
 };

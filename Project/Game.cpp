@@ -31,8 +31,8 @@ _is_finish( false ){
 	for ( int i = 0; i < GRAPH_MAX; i++ ) {
 		_images[ i ] = 0;
 	}
-	_sound_dong = Sound::load( "Resource/Sound/dong.wav" );
-	_sound_ka = Sound::load( "Resource/Sound/ka.wav" );
+	_se[ SE::SE_DONG ] = Sound::load( "Resource/Sound/dong.wav" );
+	_se[ SE::SE_KA   ] = Sound::load( "Resource/Sound/ka.wav" );
 
 	_songs = SongsPtr( new Songs );
 	_scene_ptr = ScenePtr( new SceneTitle( ) );
@@ -56,6 +56,15 @@ void Game::setFinish( ) {
 
 void Game::setResult( RESULT result ) {
 	_result = result;
+}
+
+void Game::setKey( SE se ) {
+	if ( se == SE::SE_DONG ) {
+		_automatic[ SE::SE_DONG ] = true; 
+	}
+	if ( se == SE::SE_KA ) {
+		_automatic[ SE::SE_KA ] = true; 
+	}
 }
 
 bool Game::isPushKey( int key ) const {
@@ -100,8 +109,11 @@ bool Game::isDongLeft( ) const {
 }
 
 bool Game::isDongRight( ) const {
-	bool result = isPushKey( KEY::KEY_J );
-	return result;
+	bool push = isPushKey( KEY::KEY_J );
+	if ( _automatic[ SE::SE_DONG ] ) {
+		push = true;
+	}
+	return push;
 }
 
 bool Game::isKaLeft( ) const {
@@ -110,6 +122,9 @@ bool Game::isKaLeft( ) const {
 		push = true;
 	}
 	if ( isPushKey( KEY::KEY_LEFT ) ) {
+		push = true;
+	}
+	if ( _automatic[ SE::SE_KA ] ) {
 		push = true;
 	}
 	return push;
@@ -124,6 +139,17 @@ bool Game::isKaRight( ) const {
 		push = true;
 	}
 	return push;
+}
+
+bool Game::isAutomatic( ) const {
+	return _auto;
+}
+
+
+void Game::changeAutomatic( ) {
+	if ( isPushKey( KEY::KEY_1 ) ) {
+		_auto = !_auto;
+	}
 }
 
 void Game::setScene( SCENE scene ) {
@@ -149,6 +175,7 @@ bool Game::isFinish( ) {
 void Game::update( ) {
 	updateKey( );
 	updateSe( );
+	changeAutomatic( );
 	if ( _scene_ptr ) {
 		_scene_ptr->update( getThis( ) );
 		_scene_ptr->draw( getThis( ) );
@@ -204,18 +231,20 @@ void Game::updateKey( ) {
 
 void Game::updateSe( ) {
 	if ( isDongLeft( ) ) {
-		Sound::playSE( _sound_dong, false );
+		Sound::playSE( _se[ SE::SE_DONG ], false );
 	}
 	if ( isDongRight( ) ) {
-		Sound::playSE( _sound_dong, false );
+		Sound::playSE( _se[ SE::SE_DONG ], false );
 	}
 	if ( isKaLeft( ) ) {
-		Sound::playSE( _sound_ka, false );
+		Sound::playSE( _se[ SE::SE_KA ], false );
 	}
 	if ( isKaRight( ) ) {
-		Sound::playSE( _sound_ka, false );
+		Sound::playSE( _se[ SE::SE_KA ], false );
 	}
 	if ( isPushKey( KEY::KEY_SPACE ) ) {
-		Sound::playSE( _sound_dong, false );
+		Sound::playSE( _se[ SE::SE_DONG ], false );
 	}
+	_automatic[ SE::SE_DONG ] = false;
+	_automatic[ SE::SE_KA ] = false;
 }
