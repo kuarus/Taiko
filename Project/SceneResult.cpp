@@ -59,21 +59,23 @@ void SceneResult::draw( GamePtr game ) {
 
 int SceneResult::addNum( int num1, int num2 ) {
 	int result = num1;
-	int tmp = num2;
-	int digit = 0;
-
-	while ( tmp != 0 ) {
-		tmp /= 10;
-		digit++;
-	}
-
-	for ( int i = digit - 1; i >= 0; i-- ) {
-		int num = 1;
-		for ( int j = 0; j < i; j++ ) {
-			num *= 10;
+	if ( num1 != num2 ) {
+		int tmp = num2;
+		int digit = 0;
+	
+		while ( tmp != 0 ) {
+			tmp /= 10;
+			digit++;
 		}
-		if ( result <= num2 - num ) {
-			result += num;
+	
+		for ( int i = digit - 2; i >= 0; i-- ) {
+			int num = 1;
+			for ( int j = 0; j < i; j++ ) {
+				num *= 11;
+			}
+			if ( result <= num2 - num ) {
+				result += num;
+			}
 		}
 	}
 	return result;

@@ -8,10 +8,12 @@ Drawer::Drawer( ) {
 Drawer::~Drawer( ) {
 }
 
-void Drawer::drawGraph( int tx, int ty, int sx1, int sy1, int sx2, int sy2, int width, int height, int image ) {
+void Drawer::drawGraph( int tx, int ty, int sx1, int sy1, int sx2, int sy2, int width, int height, int image, int param ) {
 	int cx = tx * width;
 	int cy = ty * height;
+	if ( param != 255 ) SetDrawBlendMode( DX_BLENDMODE_ALPHA, param );
 	DrawRectExtendGraph( sx1, sy1, sx2, sy2, cx, cy, width, height, image, TRUE );
+	if ( param != 255 ) SetDrawBlendMode( DX_BLENDMODE_ALPHA, 255 );
 }
 
 void Drawer::drawBox( int x1, int y1, int x2, int y2, unsigned int color ) {

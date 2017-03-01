@@ -124,7 +124,7 @@ void ScenePlay::loadSounds( ) {
 void ScenePlay::updatePlay( GamePtr game ) {
 	int now = Sound::getTime( _music );
 	int seq = ( now - OFFSET + _offset ) * 100 / _pitch;
-	int mark = _idx * 128;
+	int mark = _idx * MAX_CODE;
 	if ( seq >= mark &&
 		_before_seq < mark ) {
 		_idx++;
