@@ -4,10 +4,6 @@
 
 class Songs {
 public:
-	struct SONG {
-		std::string file_name;
-		std::string directory;
-	};
 	enum DIFF {
 		ONI,
 		HARD,
@@ -15,23 +11,37 @@ public:
 		EASY,
 		MAX_DIFF
 	};
+
+	struct SONG_INFO {
+		std::string genre;
+		std::string title;
+		std::string music;
+		std::string filename;
+	};
+	struct SONG_DATA {
+		int pitch;
+		int offset;
+		std::vector< std::vector< char > > codes;
+		SONG_DATA( ) {
+			this->pitch = 0;
+			this->offset = 0;
+		}
+	};
 public:
 	Songs( );
 	virtual ~Songs( );
 public:
-	std::vector< SONG > getSongList( ) const;
-	std::string getTitle( std::string file_name ) const;
-	std::string getTitle( int idx ) const;
-	std::string getMusicFileName( int idx ) const;
-	SONG getSongData( int idx ) const;
+	std::vector< SONG_INFO > getSongInfoList( ) const;
+	SONG_DATA getSongData( int idx, DIFF diff ) const;
+	SONG_INFO getInfo( int idx ) const;
 	int getLevel( int idx, DIFF diff ) const;
-	std::vector< std::vector< char > > getCode( int idx, DIFF diff ) const;
-	int getPitch( int idx ) const;
-	int getOffset( int idx ) const;
 private:
-	void sarchFile( );
-	std::vector< std::string > getDirectory( ) const;
-	std::string getGenreName( std::string directory ) const;
+	void loadSongInfoList( );
+	std::vector< std::string > getDirectoryList( ) const;
+	std::string getGenre( std::string directory ) const;
+	SONG_INFO getInfo( std::string filename, std::string genre, std::string directory ) const;
+	std::vector< std::vector< char > > getCode( std::string filename, DIFF diff ) const;
 private:
-	std::vector< SONG > _song_list;
+	std::vector< SONG_INFO > _song_info_list;
+	std::vector< std::string > _file_list;
 };

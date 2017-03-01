@@ -1,5 +1,6 @@
 #include "Drawer.h"
 #include "DxLib.h"
+#include "define.h"
 
 Drawer::Drawer( ) {
 }

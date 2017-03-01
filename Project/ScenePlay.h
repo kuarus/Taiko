@@ -15,12 +15,12 @@ public:
 	void update( GamePtr game );
 	void draw( GamePtr game );
 private:
-	enum STATE {
-		STATE_NORMAL,
-		STATE_CLEAR,
-		STATE_HOT,
-		STATE_MISS,
-		STATE_MISS_CLEAR,
+	enum MOOD {
+		MOOD_NORMAL,
+		MOOD_CLEAR,
+		MOOD_HOT,
+		MOOD_MISS,
+		MOOD_MISS_CLEAR,
 		MAX_STATE
 	};
 	enum PLAY_STATE {
@@ -43,6 +43,8 @@ private:
 		IMAGE_COMBO_NUM,
 		IMAGE_JUDGE,
 		IMAGE_EXPLOSION,
+		IMAGE_FLASH_RED,
+		IMAGE_FLASH_BLUE,
 		MAX_IMAGE
 	};
 	enum COMBO {
@@ -64,13 +66,14 @@ private:
 	void loadImages( );
 	void loadSounds( );
 	void updatePlay( GamePtr game );
+	void updateJudge( );
 	void updateBullet( int idx, GamePtr game );
 	void drawBg( );
 	void drawBarLine( ) const;
 	void drawBullet( ) const;
 	void drawTitle( ) const;
 	void drawMTaiko( GamePtr game ) const;
-	void drawJudge( );
+	void drawJudge( ) const;
 	void drawExplosion( );
 	void drawCombo( int num ) const;
 	void drawNote( GamePtr game ) const;
@@ -80,22 +83,20 @@ private:
 	void playComboSound( );
 	void addScore( );
 private:
-	int _image[ IMAGE::MAX_IMAGE ];
-	STATE _state;
+	MOOD _mood;
 	PLAY_STATE _play_state;
-	int _music;
-	std::list< BulletPtr > _bullets;
-	std::string _title;
-	std::vector< Bullet::CODE > _codes;
-	int _offset;
-	bool _start;
-	int _combo_sound[ COMBO::MAX_COMBO ];
-	int _before_seq;
-	int _dong;
-	int _pitch;
-	int _idx;
 	Game::RESULT _result;
+	Songs::SONG_DATA _song;
 	Bullet::JUDGE _judge;
+	bool _start;
+	int _idx;
+	int _music;
+	int _before_seq;
 	int _judge_count;
+	int _image[ IMAGE::MAX_IMAGE ];
+	int _combo_sound[ COMBO::MAX_COMBO ];
+	std::string _title;
+	std::list< BulletPtr > _bullets;
+	std::vector< Bullet::CODE > _codes;
 };
 

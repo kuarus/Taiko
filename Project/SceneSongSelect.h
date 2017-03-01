@@ -27,5 +27,6 @@ private:
 	STATE _state;
 	Songs::DIFF _selecting_diff;
 	SongsPtr _songs;
+	std::vector< Songs::SONG_INFO > _song_list;
 };
 

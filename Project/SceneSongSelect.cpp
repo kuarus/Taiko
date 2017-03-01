@@ -16,8 +16,9 @@ _select( select ),
 _music( 0 ),
 _state( STATE::STATE_SELECT_SONG ),
 _selecting_diff( Songs::DIFF::EASY ) {
-	_bg_image = Drawer::loadGraph( "Resource/img/song_select_bg.png" );
 	_songs = songs;
+	_song_list = _songs->getSongInfoList( );
+	_bg_image = Drawer::loadGraph( "Resource/img/song_select_bg.png" );
 	audition( );
 	Drawer::changeFont( V_FONT );
 }
@@ -58,7 +59,7 @@ void SceneSongSelect::draw( GamePtr game ) {
 }
 
 void SceneSongSelect::drawSelecting( unsigned int color ) {
-	std::string title =  _songs->getTitle( _select );
+	std::string title =  _song_list[ _select ].title;
 	int x = SELECTING_X;
 	int y = MENU_Y;
 	drawSong( x, y, x + SELECTING_WIDTH, y + MENU_HEIGHT, color, _select );
@@ -101,14 +102,13 @@ void SceneSongSelect::drawSelecting( unsigned int color ) {
 }
 
 void SceneSongSelect::drawSong( int x1, int y1, int x2, int y2, unsigned int color, int idx ) {
-	std::string title =  _songs->getTitle( idx );
-
+	std::string title = _song_list[ idx ].title;
 	Drawer::drawBox( x1, y1, x2, y2, color );
 	Drawer::drawVString( x2 - 60, y1 + 20, title.c_str( ) );
 }
 
 void SceneSongSelect::drawSongList( ) {
-	std::vector< Songs::SONG > song_list = _songs->getSongList( );
+	std::vector< Songs::SONG_INFO > song_list = _songs->getSongInfoList( );
 	int list_size = song_list.size( );
 	int menu_width = 150;
 	int sx1 = SELECTING_X;
@@ -132,8 +132,7 @@ void SceneSongSelect::drawSongList( ) {
 }
 
 void SceneSongSelect::select( GamePtr game ) {
-	std::vector< Songs::SONG > song_list = _songs->getSongList( );
-	int list_size = song_list.size( );
+	int list_size = _song_list.size( );
 	bool push = false;
 	int selecting_diff = (int)_selecting_diff;
 
@@ -175,9 +174,7 @@ void SceneSongSelect::select( GamePtr game ) {
 
 void SceneSongSelect::audition( ) {
 	Sound::stop( _music );
-	Songs::SONG music_data = _songs->getSongData( _select );
-	std::string music_file = music_data.directory + "/" + _songs->getMusicFileName( _select );
-	_music = Sound::load( music_file.c_str( ) );
+	_music = Sound::load( _song_list[ _select ].music.c_str( ) );
 	Sound::playMusic( _music, true );
 	Sound::changeVol( 210, _music );
 }

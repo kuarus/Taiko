@@ -8,8 +8,6 @@ SceneResult::SceneResult( Game::RESULT result ) :
 _result( result ),
 _count( 0 ) {
 	_bg_image = Drawer::loadGraph( "Resource/img/resultbg_clear.png" );
-	_view.combo = result.combo;
-	_view.max_combo = result.max_combo;
 }
 
 
@@ -19,10 +17,12 @@ SceneResult::~SceneResult( ) {
 
 void SceneResult::update( GamePtr game ) {
 	if ( _count % DRAW_INTERVAL_TIME == 0 ) {
-		_view.great = addNum( _view.great, _result.great );
-		_view.good  = addNum( _view.good , _result.good  );
-		_view.bad   = addNum( _view.bad  , _result.bad   );
-		_view.score = addNum( _view.score, _result.score );
+		_view.great		= addNum( _view.great	 , _result.great );
+		_view.good		= addNum( _view.good	 , _result.good  );
+		_view.bad		= addNum( _view.bad		 , _result.bad   );
+		_view.score		= addNum( _view.score	 , _result.score );
+		_view.combo		= addNum( _view.combo	 , _result.combo );
+		_view.max_combo = addNum( _view.max_combo, _result.max_combo );
 	}
 
 	if ( _count > WAIT_TIME ) {

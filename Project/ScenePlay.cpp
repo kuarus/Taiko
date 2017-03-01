@@ -16,22 +16,21 @@ static const int GOOD_SCORE = 5;
 static const int VOL = 230;//MAX255
 
 ScenePlay::ScenePlay( int select, SongsPtr songs, Songs::DIFF diff ) :
-_state( STATE::STATE_NORMAL ),
+_mood( MOOD::MOOD_NORMAL ),
 _play_state( PLAY_STATE::PLAY_STATE_WAIT ),
 _before_seq( 0 ),
 _idx( 1 ),
 _result( ),
 _judge( Bullet::JUDGE::JUDGE_NONE ) {
+	Drawer::changeFont( H_FONT );
+
+	Songs::SONG_INFO song_info = songs->getInfo( select );
+	std::string music_file = song_info.music;
+	
+	_music = Sound::load( music_file.c_str( ) );
+	_song = songs->getSongData( select, diff );
 	loadImages( );
 	loadSounds( );
-
-	Songs::SONG music_data = songs->getSongData( select );
-	std::string music_file = music_data.directory + "/" + songs->getMusicFileName( select );
-	_music = Sound::load( music_file.c_str( ) );
-	_title = songs->getTitle( select );
- 	_offset = songs->getOffset( select );
-	_pitch = songs->getPitch( select );
-	Drawer::changeFont( H_FONT );
 	loadBullet( songs, select, diff );
 }
 
@@ -69,7 +68,9 @@ void ScenePlay::update( GamePtr game ) {
 		break;
 	case PLAY_STATE::PLAY_STATE_END:
 		game->setResult( _result );
-		game->setScene( Game::SCENE::SCENE_RESULT );
+		if ( !Sound::isPlayingMusic( _combo_sound[ COMBO::COMBO_FULL ] ) ) {
+			game->setScene( Game::SCENE::SCENE_RESULT );
+		}
 		break;
 	}
 
@@ -109,32 +110,47 @@ void ScenePlay::loadImages( ) {
 }
 
 void ScenePlay::loadSounds( ) {
-	_combo_sound[ COMBO::COMBO_50 ] = Sound::load( "Resource/Sound/voice_50combo.wav" );
-	_combo_sound[ COMBO::COMBO_100 ] = Sound::load( "Resource/Sound/voice_100combo.wav" );
-	_combo_sound[ COMBO::COMBO_200 ] = Sound::load( "Resource/Sound/voice_200combo.wav" );
-	_combo_sound[ COMBO::COMBO_300 ] = Sound::load( "Resource/Sound/voice_300combo.wav" );
-	_combo_sound[ COMBO::COMBO_400 ] = Sound::load( "Resource/Sound/voice_400combo.wav" );
-	_combo_sound[ COMBO::COMBO_500 ] = Sound::load( "Resource/Sound/voice_500combo.wav" );
-	_combo_sound[ COMBO::COMBO_600 ] = Sound::load( "Resource/Sound/voice_600combo.wav" );
-	_combo_sound[ COMBO::COMBO_700 ] = Sound::load( "Resource/Sound/voice_700combo.wav" );
-	_combo_sound[ COMBO::COMBO_800 ] = Sound::load( "Resource/Sound/voice_800combo.wav" );
-	_combo_sound[ COMBO::COMBO_900 ] = Sound::load( "Resource/Sound/voice_900combo.wav" );
+	_combo_sound[ COMBO::COMBO_50   ] = Sound::load( "Resource/Sound/voice_50combo.wav" );
+	_combo_sound[ COMBO::COMBO_100  ] = Sound::load( "Resource/Sound/voice_100combo.wav" );
+	_combo_sound[ COMBO::COMBO_200  ] = Sound::load( "Resource/Sound/voice_200combo.wav" );
+	_combo_sound[ COMBO::COMBO_300  ] = Sound::load( "Resource/Sound/voice_300combo.wav" );
+	_combo_sound[ COMBO::COMBO_400  ] = Sound::load( "Resource/Sound/voice_400combo.wav" );
+	_combo_sound[ COMBO::COMBO_500  ] = Sound::load( "Resource/Sound/voice_500combo.wav" );
+	_combo_sound[ COMBO::COMBO_600  ] = Sound::load( "Resource/Sound/voice_600combo.wav" );
+	_combo_sound[ COMBO::COMBO_700  ] = Sound::load( "Resource/Sound/voice_700combo.wav" );
+	_combo_sound[ COMBO::COMBO_800  ] = Sound::load( "Resource/Sound/voice_800combo.wav" );
+	_combo_sound[ COMBO::COMBO_900  ] = Sound::load( "Resource/Sound/voice_900combo.wav" );
+	_combo_sound[ COMBO::COMBO_FULL ] = Sound::load( "Resource/Sound/voice_fullcombo.wav" );
 }
 
 void ScenePlay::updatePlay( GamePtr game ) {
 	int now = Sound::getTime( _music );
-	int seq = ( now - OFFSET + _offset ) * 100 / _pitch;
+	int seq = ( now - OFFSET + _song.offset ) * 100 / _song.pitch;
 	int mark = _idx * MAX_CODE;
 	if ( seq >= mark &&
 		_before_seq < mark ) {
 		_idx++;
 	}
 	_before_seq = seq;
+	updateJudge( );
 	updateBullet( seq, game );
 	creatBullet( );
 	if ( !Sound::isPlayingMusic( _music ) ) {
+		if ( _result.bad == 0 ) {
+			Sound::playSE( _combo_sound[ COMBO::COMBO_FULL ], false );
+		}
 		_play_state = PLAY_STATE::PLAY_STATE_END;
 	}
+}
+
+void ScenePlay::updateJudge( ) {
+	if ( _judge != Bullet::JUDGE::JUDGE_NONE &&
+		 _judge != Bullet::JUDGE::JUDGE_THROUGH ) {
+		if ( _judge_count > JUDGE_DRAW_TIME ) {
+				_judge = Bullet::JUDGE::JUDGE_NONE;
+		}
+	}
+	_judge_count++;
 }
 
 void ScenePlay::updateBullet( int idx, GamePtr game ) {
@@ -195,7 +211,7 @@ void ScenePlay::drawBg( ) {
 	int judge_x1 = JUDGE_X - judge_width / 2;
 	int judge_x2 = JUDGE_X + judge_width - judge_width / 2;
 
-	Drawer::drawGraph( 0, 0, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, bg_width, bg_height, _image[ _state ] );
+	Drawer::drawGraph( 0, 0, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, bg_width, bg_height, _image[ _mood ] );
 	Drawer::drawGraph( 0, 0, judge_x1, ROAD_Y + 20, judge_x2, ROAD_Y + judge_height + 20, nots_chip_size, nots_chip_size, _image[ IMAGE::IMAGE_NOTS ] );
 }
 
@@ -244,7 +260,7 @@ void ScenePlay::drawMTaiko( GamePtr game ) const {
 	}
 }
 
-void ScenePlay::drawJudge( ) {
+void ScenePlay::drawJudge( ) const {
 	if ( _judge != Bullet::JUDGE::JUDGE_NONE &&
 		 _judge != Bullet::JUDGE::JUDGE_THROUGH ) {
 		int chip_size = 50;
@@ -266,10 +282,6 @@ void ScenePlay::drawJudge( ) {
 			break;
 		}
 		Drawer::drawGraph( tx, ty, sx1, sy1, sx2, sy2, chip_size, chip_size, _image[ IMAGE::IMAGE_JUDGE ] );
-		if ( _judge_count > JUDGE_DRAW_TIME ) {
-			_judge = Bullet::JUDGE::JUDGE_NONE;
-		}
-		_judge_count++;
 	}
 }
 
@@ -325,16 +337,15 @@ void ScenePlay::drawNote( GamePtr game ) const {
 }
 
 void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
-	std::vector< std::vector< char > > code_list = songs->getCode( select, diff );
-	int code_list_size = code_list.size( );
+	int code_list_size = _song.codes.size( );
 	for ( int i = 0; i < code_list_size; i++ ) {
-		int code_size = code_list[ i ].size( );
+		int code_size = _song.codes[ i ].size( );
 		int size = 0;
 		if ( code_size != 0 ) {
 			size = MAX_CODE / code_size;
 		}
 		for ( int j = 0; j < code_size; j++ ) {
-			char type = code_list[ i ][ j ];
+			char type = _song.codes[ i ][ j ];
 			if ( type > 4 || type == 0 ) {
 				continue;
 			}
@@ -426,11 +437,11 @@ void ScenePlay::playComboSound( ) {
 
 void ScenePlay::addScore( ) {
 	switch ( _judge ) {
-		case Bullet::JUDGE::JUDGE_GREAT:
-			_result.score += GREAT_SCORE * ( _result.combo + 10 ) / 10;
-			break;
-		case Bullet::JUDGE::JUDGE_GOOD:
-			_result.score += GOOD_SCORE * ( _result.combo + 10 ) / 10;
-			break;
+	case Bullet::JUDGE::JUDGE_GREAT:
+		_result.score += GREAT_SCORE * ( _result.combo + 10 ) / 10;
+		break;
+	case Bullet::JUDGE::JUDGE_GOOD:
+		_result.score += GOOD_SCORE * ( _result.combo + 10 ) / 10;
+		break;
 	}
 }

@@ -8,103 +8,73 @@ static const std::string DIRECTORY = "Resource/Songs/";
 static const std::string EXTENTION = "tja";
 
 Songs::Songs( ) {
-	sarchFile( );
+	loadSongInfoList( );
 }
 
 
 Songs::~Songs( ) {
 }
 
-void Songs::sarchFile( ) {
-	std::vector< std::string > file_names;
-
-	//各フォルダ内検索
-	std::vector< std::string > directory = getDirectory( );
-	std::vector< std::string >::iterator dir_ite = directory.begin( );
-	while ( dir_ite != directory.end( ) ) {
-		WIN32_FIND_DATA win32fd;
-		std::string sarch = DIRECTORY + (*dir_ite) + "\\*." + EXTENTION;
-		HANDLE handle = FindFirstFile( sarch.c_str( ), &win32fd );
-		do {
-			if ( handle == INVALID_HANDLE_VALUE ) {
-				continue;
-			}
-			if ( !( win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) ) {
-				//ファイル名追加
-				SONG song;
-				song.file_name = win32fd.cFileName;
-				song.directory = DIRECTORY + (*dir_ite);
-				_song_list.push_back( song );
-			}
-		} while ( FindNextFile( handle, &win32fd ) );
-		
-		dir_ite++;
-	}
+std::vector< Songs::SONG_INFO > Songs::getSongInfoList( ) const {
+	return _song_info_list;
 }
 
-std::vector< std::string > Songs::getDirectory( ) const {
-	std::vector< std::string > directory;
-	WIN32_FIND_DATA win32fd;
-	std::string sarch = DIRECTORY + "\\*";
-	HANDLE handle = FindFirstFile( sarch.c_str( ), &win32fd );
-	do {
-		if( strcmp( win32fd.cFileName, "." ) && strcmp( win32fd.cFileName, ".." ) ) {
-			if ( handle == INVALID_HANDLE_VALUE ) {
-				continue;
-			}
-			if ( win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) {
-				//フォルダ名追加
-				directory.push_back( win32fd.cFileName );
-			}
-		}
-	} while ( FindNextFile( handle, &win32fd ) );
-	return directory;
-}
-
-std::string Songs::getGenreName( std::string directory ) const {
-	std::string genre_name = "";
-
-	std::string file_name = directory + "/";
-	std::ifstream ifs( file_name );
+Songs::SONG_DATA Songs::getSongData( int idx, DIFF diff ) const {
+	SONG_DATA song_data = SONG_DATA( );
+	std::string filename = _song_info_list[ idx ].filename;
+	song_data.codes = getCode( filename, diff );
+	std::string tmp;
+	std::ifstream ifs( filename );
 	if ( ifs.fail( ) ) {
-		return genre_name;
+		return song_data;
 	}
 
-	while ( getline( ifs, genre_name ) ) {
-		if ( strstr( genre_name.c_str( ), "GenreName=" ) != NULL ) {
-			genre_name.replace( 10, 0, "" );
+	while ( getline( ifs, tmp ) ) {
+		if ( strstr( tmp.c_str( ), "PITCH:" ) != NULL ) {
+			tmp.replace( 0, 6, "" );
+			double d_pitch = std::stod( tmp, 0 );
+			d_pitch *= 100;
+			song_data.pitch = (int)d_pitch;
+			continue;
+		}
+		if ( strstr( tmp.c_str( ), "OFFSET:" ) != NULL ) {
+			bool minus = false;
+			tmp.replace( 0, 7, "" );
+			if ( strstr( tmp.c_str( ), "-" ) != NULL ) {
+				tmp.replace( 0, 1, "" );
+				minus = true;
+			}
+			double d_offset = std::stod( tmp, 0 );
+			d_offset *= 1000;
+			song_data.offset = (int)d_offset;
+			if ( minus ) {
+				song_data.offset *= -1;
+			}
+			continue;
+		}
+
+		if ( song_data.offset != 0 &&
+			 song_data.pitch != 0 ) {
 			break;
 		}
 	}
-	return genre_name;
+
+	if ( song_data.pitch == 0 ) {
+		song_data.pitch = 1000;
+	}
+
+	return song_data;
 }
 
-std::string Songs::getMusicFileName( int idx ) const {
-
-	std::string music = "";
-	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
-	std::ifstream ifs( file_name );
-	if ( ifs.fail( ) ) {
-		return music;
-	}
-	while ( getline( ifs, music ) ) {
-		if ( strstr( music.c_str( ), "WAVE:" ) != NULL ) {
-			music.replace( 0, 5, "" );
-			break;
-		}
-	}
-	return music;
-}
-
-Songs::SONG Songs::getSongData( int idx ) const {
-	return _song_list[ idx ];
+Songs::SONG_INFO Songs::getInfo( int idx ) const {
+	return _song_info_list[ idx ];
 }
 
 int Songs::getLevel( int idx, DIFF diff ) const {
 	int level = 0;
 	std::string level_str;
-	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
-	std::ifstream ifs( file_name );
+	std::string filename = _song_info_list[ idx ].filename;
+	std::ifstream ifs( filename );
 	if ( ifs.fail( ) ) {
 		return 0;
 	}
@@ -151,11 +121,109 @@ int Songs::getLevel( int idx, DIFF diff ) const {
 	return level;
 }
 
-std::vector< std::vector< char > > Songs::getCode( int idx, DIFF diff ) const {
+void Songs::loadSongInfoList( ) {
+	std::vector< std::string > file_names;
+
+	//各フォルダ内検索
+	std::vector< std::string > directory_list = getDirectoryList( );
+	std::vector< std::string >::const_iterator dir_ite = directory_list.begin( );
+	while ( dir_ite != directory_list.end( ) ) {
+		std::string directory = DIRECTORY + (*dir_ite) + "/";
+		std::string genre = getGenre( directory );
+
+		WIN32_FIND_DATA win32fd;
+		std::string sarch = DIRECTORY + (*dir_ite) + "\\*." + EXTENTION;
+		HANDLE handle = FindFirstFile( sarch.c_str( ), &win32fd );
+		do {
+			if ( handle == INVALID_HANDLE_VALUE ) {
+				continue;
+			}
+			if ( !( win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) ) {
+				//ファイル名追加
+				std::string file_name = win32fd.cFileName;
+				SONG_INFO song_info = getInfo( file_name, genre, directory ); 
+				_song_info_list.push_back( song_info );
+			}
+		} while ( FindNextFile( handle, &win32fd ) );
+		
+		dir_ite++;
+	}
+}
+
+Songs::SONG_INFO Songs::getInfo( std::string filename, std::string genre, std::string directory ) const {
+	SONG_INFO song_info = SONG_INFO( );
+	song_info.genre = genre;
+	song_info.filename = directory + filename;
+	std::ifstream ifs( song_info.filename );
+	std::string tmp;
+
+	if ( ifs.fail( ) ) {
+		return song_info;
+	}
+
+	while ( getline( ifs, tmp ) ) {
+		if ( strstr( tmp.c_str( ), "SUBTITLE:" ) != NULL ) {
+			continue;
+		}
+		if ( strstr( tmp.c_str( ), "TITLE:" ) != NULL ) {
+			tmp.replace( 0, 6, "" );
+			song_info.title = tmp;
+			continue;
+		}
+		if ( strstr( tmp.c_str( ), "WAVE:" ) != NULL ) {
+			tmp.replace( 0, 5, "" );
+			song_info.music = directory + tmp;
+			continue;
+		}
+		if ( song_info.title.size( ) != 0 &&
+			 song_info.music.size( ) != 0 ) {
+			break;
+		}
+	}
+ 	return song_info;
+}
+
+std::vector< std::string > Songs::getDirectoryList( ) const {
+	std::vector< std::string > directory_list;
+	WIN32_FIND_DATA win32fd;
+	std::string sarch = DIRECTORY + "\\*";
+	HANDLE handle = FindFirstFile( sarch.c_str( ), &win32fd );
+	do {
+		if( strcmp( win32fd.cFileName, "." ) && strcmp( win32fd.cFileName, ".." ) ) {
+			if ( handle == INVALID_HANDLE_VALUE ) {
+				continue;
+			}
+			if ( win32fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) {
+				//フォルダ名追加
+				directory_list.push_back( win32fd.cFileName );
+			}
+		}
+	} while ( FindNextFile( handle, &win32fd ) );
+	return directory_list;
+}
+
+std::string Songs::getGenre( std::string directory ) const {
+	std::string genre_name = "";
+
+	std::string filename = directory + "/_info.ini";
+	std::ifstream ifs( filename );
+	if ( ifs.fail( ) ) {
+		return genre_name;
+	}
+
+	while ( getline( ifs, genre_name ) ) {
+		if ( strstr( genre_name.c_str( ), "GenreName=" ) != NULL ) {
+			genre_name.replace( 10, 0, "" );
+			break;
+		}
+	}
+	return genre_name;
+}
+
+std::vector< std::vector< char > > Songs::getCode( std::string filename, DIFF diff ) const {
 	std::vector< std::vector< char > > code;
 	std::string tmp_str;
-	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
-	std::ifstream ifs( file_name );
+	std::ifstream ifs( filename );
 	if ( ifs.fail( ) ) {
 		return code;
 	}
@@ -239,94 +307,4 @@ std::vector< std::vector< char > > Songs::getCode( int idx, DIFF diff ) const {
 
 	}
 	return code;
-}
-
-int Songs::getPitch( int idx ) const {
-	int pitch = 1500;
-	std::string tmp;
-	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
-	std::ifstream ifs( file_name );
-	if ( ifs.fail( ) ) {
-		return pitch;
-	}
-
-	while ( getline( ifs, tmp ) ) {
-		if ( strstr( tmp.c_str( ), "PITCH:" ) != NULL ) {
-			tmp.replace( 0, 6, "" );
-			double d_pitch = std::stod( tmp, 0 );
-			d_pitch *= 100;
-			pitch = (int)d_pitch;
-			break;
-		}
-	}
-	return pitch;
-}
-
-int Songs::getOffset( int idx ) const {
-	int offset = 0;
-	std::string tmp;
-	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
-	std::ifstream ifs( file_name );
-	if ( ifs.fail( ) ) {
-		return offset;
-	}
-	bool is_minus = false;
-	while ( getline( ifs, tmp ) ) {
-		if ( strstr( tmp.c_str( ), "OFFSET:" ) != NULL ) {
-			tmp.replace( 0, 7, "" );
-			if ( strstr( tmp.c_str( ), "-" ) != NULL ) {
-				tmp.replace( 0, 1, "" );
-				is_minus = true;
-			}
-			break;
-		}
-	}
-	double d_offset = std::stod( tmp, 0 );
-	d_offset *= 1000;
-	offset = (int)d_offset;
-	if ( is_minus ) {
-		offset *= -1;
-	}
-	return offset;
-}
-
-std::vector< Songs::SONG > Songs::getSongList( ) const {
-	return _song_list;
-}
-
-std::string Songs::getTitle( std::string file_name ) const {
-	std::string title;
-	std::ifstream ifs( file_name );
-	if ( ifs.fail( ) ) {
-		return title;
-	}
-
-	while ( getline( ifs, title ) ) {
-		if ( strstr( title.c_str( ), "TITLE:" ) != NULL ) {
-			title.replace( 0, 6, "" );
-			break;
-		}
-	}
-	return title;
-}
-
-std::string Songs::getTitle( int idx ) const {
-	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
-
-	std::string title;
-	std::ifstream ifs( file_name );
-	if ( ifs.fail( ) ) {
-		return title;
-	}
-
-	while ( getline( ifs, title ) ) {
-		if ( strstr( title.c_str( ), "TITLE:" ) != NULL ) {
-			if ( strstr( title.c_str( ), "TITLE:" ) != NULL ) {
-				title.replace( 0, 6, "" );
-				break;
-			}
-		}
-	}
-	
-	return title;
 }
