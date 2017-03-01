@@ -9,7 +9,7 @@ PTR( Bullet );
 
 class ScenePlay : public Scene {
 public:
-	ScenePlay( int select, SongsPtr songs );
+	ScenePlay( int select, SongsPtr songs, Songs::DIFF diff );
 	virtual ~ScenePlay( );
 public:
 	void update( GamePtr game );
@@ -74,12 +74,11 @@ private:
 	void drawExplosion( );
 	void drawCombo( int num ) const;
 	void drawNote( GamePtr game ) const;
-	void loadBullet( SongsPtr songs, int select );
+	void loadBullet( SongsPtr songs, int select, Songs::DIFF diff );
 	void setJudge( Bullet::JUDGE judge );
 	void creatBullet( );
 	void playComboSound( );
 	void addScore( );
-	void autoPlay( );
 private:
 	int _image[ IMAGE::MAX_IMAGE ];
 	STATE _state;

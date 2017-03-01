@@ -2,11 +2,14 @@
 #include "Drawer.h"
 
 static const int WAIT_TIME = 50;
+static const int DRAW_INTERVAL_TIME = 3;
 
 SceneResult::SceneResult( Game::RESULT result ) :
 _result( result ),
 _count( 0 ) {
 	_bg_image = Drawer::loadGraph( "Resource/img/resultbg_clear.png" );
+	_view.combo = result.combo;
+	_view.max_combo = result.max_combo;
 }
 
 
@@ -15,6 +18,13 @@ SceneResult::~SceneResult( ) {
 }
 
 void SceneResult::update( GamePtr game ) {
+	if ( _count % DRAW_INTERVAL_TIME == 0 ) {
+		_view.great = addNum( _view.great, _result.great );
+		_view.good  = addNum( _view.good , _result.good  );
+		_view.bad   = addNum( _view.bad  , _result.bad   );
+		_view.score = addNum( _view.score, _result.score );
+	}
+
 	if ( _count > WAIT_TIME ) {
 		if ( game->isNext( ) || game->isBack( ) ) {
 			game->setScene( Game::SCENE::SCENE_SONG_SELECT );
@@ -28,12 +38,43 @@ void SceneResult::draw( GamePtr game ) {
 	SetFontSize( FONT_SIZE * 3 );
 	Drawer::drawString( 280, 60, "リザルト" );
 	SetFontSize( FONT_SIZE );
+	int x = 300;
 	int y = 200;
-	Drawer::drawString( 300, y, "　　スコア：%d", _result.score );
+	Drawer::drawString( x, y, "　良：%d", _view.great );
 	y += FONT_SIZE;
-	Drawer::drawString( 300, y, "最終コンボ：%d", _result.combo );
+	Drawer::drawString( x, y, "　可：%d", _view.good );
 	y += FONT_SIZE;
-	Drawer::drawString( 300, y, "最大コンボ：%d", _result.max_combo );
+	Drawer::drawString( x, y, "不可：%d", _view.bad );
+
+	x = 500;
+	y = 200;
+	Drawer::drawString( x, y, "　　スコア：%d", _view.score );
+	y += FONT_SIZE;
+	Drawer::drawString( x, y, "最終コンボ：%d", _view.combo );
+	y += FONT_SIZE;
+	Drawer::drawString( x, y, "最大コンボ：%d", _view.max_combo );
 
 	Drawer::drawString( 100, 0, "曲選択に戻る:<Q><BackSpace><Space><D><F><J><K>" );
+}
+
+int SceneResult::addNum( int num1, int num2 ) {
+	int result = num1;
+	int tmp = num2;
+	int digit = 0;
+
+	while ( tmp != 0 ) {
+		tmp /= 10;
+		digit++;
+	}
+
+	for ( int i = digit - 1; i >= 0; i-- ) {
+		int num = 1;
+		for ( int j = 0; j < i; j++ ) {
+			num *= 10;
+		}
+		if ( result <= num2 - num ) {
+			result += num;
+		}
+	}
+	return result;
 }

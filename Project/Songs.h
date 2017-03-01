@@ -8,6 +8,13 @@ public:
 		std::string file_name;
 		std::string directory;
 	};
+	enum DIFF {
+		ONI,
+		HARD,
+		NORMAL,
+		EASY,
+		MAX_DIFF
+	};
 public:
 	Songs( );
 	virtual ~Songs( );
@@ -17,8 +24,8 @@ public:
 	std::string getTitle( int idx ) const;
 	std::string getMusicFileName( int idx ) const;
 	SONG getSongData( int idx ) const;
-	int getLevel( int idx ) const;
-	std::vector< std::vector< char > > getCode( int idx ) const;
+	int getLevel( int idx, DIFF diff ) const;
+	std::vector< std::vector< char > > getCode( int idx, DIFF diff ) const;
 	int getPitch( int idx ) const;
 	int getOffset( int idx ) const;
 private:

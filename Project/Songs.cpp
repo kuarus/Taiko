@@ -100,13 +100,46 @@ Songs::SONG Songs::getSongData( int idx ) const {
 	return _song_list[ idx ];
 }
 
-int Songs::getLevel( int idx ) const {
+int Songs::getLevel( int idx, DIFF diff ) const {
 	int level = 0;
 	std::string level_str;
 	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
 	std::ifstream ifs( file_name );
 	if ( ifs.fail( ) ) {
 		return 0;
+	}
+	std::string sarch0 = "COURSE:";
+	std::string sarch1 = "COURSE:";
+	std::string sarch2 = "COURSE:";
+	switch ( diff ) {
+	case DIFF::HARD:
+		sarch0 += "hard";
+		sarch1 += "Hard";
+		sarch2 += "2";
+		break;
+	case DIFF::NORMAL:
+		sarch0 += "normal";
+		sarch1 += "Normal";
+		sarch2 += "1";
+		break;
+	case DIFF::EASY:
+		sarch0 += "easy";
+		sarch1 += "Easy";
+		sarch2 += "0";
+		break;
+	}
+	if ( diff != DIFF::ONI ) {
+		while ( std::getline( ifs, level_str ) ) {
+			if ( std::strstr( level_str.c_str( ), sarch0.c_str( ) ) != NULL ) {
+				break;
+			}
+			if ( std::strstr( level_str.c_str( ), sarch1.c_str( ) ) != NULL ) {
+				break;
+			}
+			if ( std::strstr( level_str.c_str( ), sarch2.c_str( ) ) != NULL ) {
+				break;
+			}
+		}
 	}
 	while ( getline( ifs, level_str ) ) {
 		if ( strstr( level_str.c_str( ), "LEVEL:" ) != NULL ) {
@@ -118,7 +151,7 @@ int Songs::getLevel( int idx ) const {
 	return level;
 }
 
-std::vector< std::vector< char > > Songs::getCode( int idx ) const {
+std::vector< std::vector< char > > Songs::getCode( int idx, DIFF diff ) const {
 	std::vector< std::vector< char > > code;
 	std::string tmp_str;
 	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
@@ -127,6 +160,43 @@ std::vector< std::vector< char > > Songs::getCode( int idx ) const {
 		return code;
 	}
 	bool start = false;
+	bool through = false;
+	std::string sarch0 = "COURSE:";
+	std::string sarch1 = "COURSE:";
+	std::string sarch2 = "COURSE:";
+	switch ( diff ) {
+	case DIFF::ONI:
+		sarch0 += "oni";
+		sarch1 += "Oni";
+		sarch2 += "3";
+		break;
+	case DIFF::HARD:
+		sarch0 += "hard";
+		sarch1 += "Hard";
+		sarch2 += "2";
+		break;
+	case DIFF::NORMAL:
+		sarch0 += "normal";
+		sarch1 += "Normal";
+		sarch2 += "1";
+		break;
+	case DIFF::EASY:
+		sarch0 += "easy";
+		sarch1 += "Easy";
+		sarch2 += "0";
+		break;
+	}
+	while ( std::getline( ifs, tmp_str ) ) {
+		if ( std::strstr( tmp_str.c_str( ), sarch0.c_str( ) ) != NULL ) {
+			break;
+		}
+		if ( std::strstr( tmp_str.c_str( ), sarch1.c_str( ) ) != NULL ) {
+			break;
+		}
+		if ( std::strstr( tmp_str.c_str( ), sarch2.c_str( ) ) != NULL ) {
+			break;
+		}
+	}
 	while ( std::getline( ifs, tmp_str ) ) {
 		if ( !start ) {
 			if ( std::strstr( tmp_str.c_str( ), "#START" ) != NULL ) {
@@ -134,17 +204,28 @@ std::vector< std::vector< char > > Songs::getCode( int idx ) const {
 				continue;
 			}
 		}
+		if ( tmp_str.size( ) == 0 ) {
+			continue;
+		}
 		if ( std::strstr( tmp_str.c_str( ), "#END" ) != NULL ) {
 			break;
+		}
+		if ( std::strstr( tmp_str.c_str( ), "#N" ) != NULL ) {
+			through = true;
+		}
+		if ( std::strstr( tmp_str.c_str( ), "#E" ) != NULL ) {
+			through = true;
+		}
+		if ( std::strstr( tmp_str.c_str( ), "#M" ) != NULL ) {
+			through = false;
 		}
 		if ( std::strstr( tmp_str.c_str( ), "#" ) != NULL ) {
 			continue;
 		}
-		if ( start ) {
+		if ( start && !through ) {
 			std::string::const_iterator ite = tmp_str.begin( );
 			std::vector< char > tmp;
 			int size = tmp_str.size( );
-			assert( size != 13 ); 
 			while ( ite != tmp_str.end( ) ) {
 				char str = (*ite);
 				if ( strstr( (const char*)&str, "," ) ) {
@@ -161,7 +242,7 @@ std::vector< std::vector< char > > Songs::getCode( int idx ) const {
 }
 
 int Songs::getPitch( int idx ) const {
-	int pitch = 100;
+	int pitch = 1500;
 	std::string tmp;
 	std::string file_name = _song_list[ idx ].directory + "/" + _song_list[ idx ].file_name;
 	std::ifstream ifs( file_name );

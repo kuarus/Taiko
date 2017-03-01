@@ -13,7 +13,9 @@ static const int INTERVAL = 20;
 
 SceneSongSelect::SceneSongSelect( SongsPtr songs, int select ) :
 _select( select ),
-_music( 0 ) {
+_music( 0 ),
+_state( STATE::STATE_SELECT_SONG ),
+_selecting_diff( Songs::DIFF::EASY ) {
 	_bg_image = Drawer::loadGraph( "Resource/img/song_select_bg.png" );
 	_songs = songs;
 	audition( );
@@ -29,12 +31,24 @@ SceneSongSelect::~SceneSongSelect( ) {
 
 void SceneSongSelect::update( GamePtr game ) {
 	select( game );
-	if ( game->isNext( ) ) {
-		game->setSelectSong( _select );
-		game->setScene( Game::SCENE::SCENE_PLAY );
-	}
-	if ( game->isBack( ) ) {
-		game->setScene( Game::SCENE::SCENE_MENU );
+	switch ( _state ) {
+	case STATE::STATE_SELECT_SONG:
+		if ( game->isNext( ) ) {
+			_state = STATE::STATE_SELECT_DIFF;
+		}
+		if ( game->isBack( ) ) {
+			game->setScene( Game::SCENE::SCENE_MENU );
+		}
+		break;
+	case STATE::STATE_SELECT_DIFF:
+		if ( game->isNext( ) ) {
+			game->setSelectSong( _select, _selecting_diff );
+			game->setScene( Game::SCENE::SCENE_PLAY );
+		}
+		if ( game->isBack( ) ) {
+			_state = STATE::STATE_SELECT_SONG;
+		}
+		break;
 	}
 }
 
@@ -45,21 +59,45 @@ void SceneSongSelect::draw( GamePtr game ) {
 
 void SceneSongSelect::drawSelecting( unsigned int color ) {
 	std::string title =  _songs->getTitle( _select );
-	int level = _songs->getLevel( _select );
 	int x = SELECTING_X;
 	int y = MENU_Y;
 	drawSong( x, y, x + SELECTING_WIDTH, y + MENU_HEIGHT, color, _select );
-	Drawer::drawVString( x + FONT_SIZE + 30 + 10, y + 40, "難易度" );
-	Drawer::drawVString( x + 30, y + 20, "<鬼>" );
-
-	for ( int j = 1; j <= MAX_LEVEL; j++ ) {
-		std::string star = "☆";
-		if ( MAX_LEVEL - j <= level ) {
-			star = "★";
+	y += 30;
+	x += 10;
+	for ( int i = 0; i < Songs::DIFF::MAX_DIFF; i++ ) {
+		bool selecting = false;
+		if ( _state == STATE::STATE_SELECT_DIFF ) {
+			if ( i == (int)_selecting_diff ) {
+				selecting = true;
+			}
 		}
-		Drawer::drawVString( x + 30, y + 60 + j * FONT_SIZE, star.c_str( ) );
-	}
-	
+		Songs::DIFF diff = (Songs::DIFF)i;
+		int level = _songs->getLevel( _select, diff );
+		std::string diff_str;
+		switch ( diff ) {
+		case Songs::DIFF::ONI:
+			diff_str = "おに　　　　";
+			break;
+		case Songs::DIFF::HARD:
+			diff_str = "むずかしい　";
+			break;
+		case Songs::DIFF::NORMAL:
+			diff_str = "ふつう　　　";
+			break;
+		case Songs::DIFF::EASY:
+			diff_str = "かんたん　　";
+			break;
+		}
+		Drawer::drawVString( x, y + 20, diff_str.c_str( ), selecting );
+		for ( int j = 1 + i; j <= MAX_LEVEL; j++ ) {
+			std::string star = "☆";
+			if ( MAX_LEVEL - j <= level ) {
+				star = "★";
+			}
+			Drawer::drawVString( x, y + FONT_SIZE * 5 + j * FONT_SIZE, star.c_str( ) );
+		}
+		x += FONT_SIZE + 20;
+	}	
 }
 
 void SceneSongSelect::drawSong( int x1, int y1, int x2, int y2, unsigned int color, int idx ) {
@@ -94,24 +132,44 @@ void SceneSongSelect::drawSongList( ) {
 }
 
 void SceneSongSelect::select( GamePtr game ) {
-	bool push = false;
-	if ( game->isKaLeft( ) ) {
-		_select--;
-		push = true;
-	}
-	if ( game->isKaRight( ) ) {
-		_select++;
-		push = true;
-	}
 	std::vector< Songs::SONG > song_list = _songs->getSongList( );
 	int list_size = song_list.size( );
-	_select %= list_size;
-	if ( _select < 0 ) {
-		_select += list_size;
-	}
+	bool push = false;
+	int selecting_diff = (int)_selecting_diff;
 
-	if ( push ) {
-		audition( );
+	switch ( _state ) {
+	case STATE::STATE_SELECT_SONG:
+		if ( game->isKaLeft( ) ) {
+			_select--;
+			push = true;
+		}
+		if ( game->isKaRight( ) ) {
+			_select++;
+			push = true;
+		}
+		_select %= list_size;
+		if ( _select < 0 ) {
+			_select += list_size;
+		}
+		if ( push ) {
+			audition( );
+		}
+		break;
+	case STATE::STATE_SELECT_DIFF:
+		if ( game->isKaLeft( ) ) {
+			selecting_diff--;
+		}
+		if ( game->isKaRight( ) ) {
+			selecting_diff++;
+		}
+		if ( selecting_diff < 0 ) {
+			selecting_diff = 0;
+		}
+		if ( selecting_diff >= Songs::DIFF::MAX_DIFF ) {
+			selecting_diff = (int)Songs::DIFF::MAX_DIFF - 1;
+		}
+		_selecting_diff = (Songs::DIFF)selecting_diff;
+		break;
 	}
 }
 

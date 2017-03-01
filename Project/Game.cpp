@@ -156,8 +156,9 @@ void Game::setScene( SCENE scene ) {
 	_scene = scene;
 }
 
-void Game::setSelectSong( int select ) {
+void Game::setSelectSong( int select, Songs::DIFF diff ) {
 	_selecting_song = select;
+	_diff = diff;
 }
 
 bool Game::isFinish( ) {
@@ -210,7 +211,7 @@ void Game::changeScene( SCENE scene ) {
 		_scene_ptr.reset( new SceneSongSelect( _songs, _selecting_song ) );
 		break;
 	case SCENE::SCENE_PLAY:
-		_scene_ptr.reset( new ScenePlay( _selecting_song, _songs ) );
+		_scene_ptr.reset( new ScenePlay( _selecting_song, _songs, _diff ) );
 		break;
 	case SCENE::SCENE_RESULT:
 		_scene_ptr.reset( new SceneResult( _result ) );

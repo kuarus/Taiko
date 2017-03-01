@@ -47,10 +47,16 @@ public:
 		int combo;
 		int max_combo;
 		int score;
+		int great;
+		int good;
+		int bad;
 		RESULT( ) {
 			this->combo = 0;
 			this->max_combo = 0;
 			this->score = 0;
+			this->great = 0;
+			this->good = 0;
+			this->bad = 0;
 		}
 	};
 public:
@@ -58,7 +64,7 @@ public:
 	static void initialize( );
 public:
 	void setScene( SCENE scene );
-	void setSelectSong( int select );
+	void setSelectSong( int select, Songs::DIFF diff );
 	void run( );
 	void setFinish( );
 	void setResult( RESULT result );
@@ -90,6 +96,7 @@ private:
 	int _selecting_song;
 	int _se[ SE::MAX_SE ];
 	RESULT _result;
+	Songs::DIFF _diff;
 	bool _is_finish;
 	bool _auto;
 	bool _automatic[ SE::MAX_SE ];

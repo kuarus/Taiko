@@ -6,9 +6,9 @@ static const int POSITION_Y = 200;
 static const int CHIP_SIZE = 64;
 static const int MOVE_SPEED = 30;
 static const int INIT_SPEED_Y = -20;
-static const int JUDGE_GREAT_RANGE = 2;
-static const int JUDGE_GOOD_RANGE = 4;
-static const int JUDGE_BAD_RANGE = 6;
+static const int JUDGE_GREAT_RANGE = 3;
+static const int JUDGE_GOOD_RANGE = 6;
+static const int JUDGE_BAD_RANGE = 10;
 
 Bullet::Bullet( CODE code, int num ) {
 	_num = num;

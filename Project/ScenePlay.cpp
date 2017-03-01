@@ -6,16 +6,16 @@
 
 static const int WAIT_APPEAR_TIME = 40;
 static const int MUSIC_VOL = 80;
-static const int MAX_CODE = 128;
+static const int MAX_CODE = 192;
 static const int OFFSET = 0;
 static const int LOAD_IDX = 1000;
 static const int JUDGE_DRAW_TIME = 10;
-static const int EXPLOSION_DRAW_TIME = 18;
+static const int EXPLOSION_DRAW_TIME = 9;
 static const int GREAT_SCORE = 10;
 static const int GOOD_SCORE = 5;
 static const int VOL = 230;//MAX255
 
-ScenePlay::ScenePlay( int select, SongsPtr songs ) :
+ScenePlay::ScenePlay( int select, SongsPtr songs, Songs::DIFF diff ) :
 _state( STATE::STATE_NORMAL ),
 _play_state( PLAY_STATE::PLAY_STATE_WAIT ),
 _before_seq( 0 ),
@@ -32,7 +32,7 @@ _judge( Bullet::JUDGE::JUDGE_NONE ) {
  	_offset = songs->getOffset( select );
 	_pitch = songs->getPitch( select );
 	Drawer::changeFont( H_FONT );
-	loadBullet( songs, select );
+	loadBullet( songs, select, diff );
 }
 
 
@@ -201,7 +201,7 @@ void ScenePlay::drawBg( ) {
 
 void ScenePlay::drawBarLine( ) const {
 	for ( int i = 0; i < 6; i++ ) {
-		int mark = ( _idx - 1 + i ) * 128;
+		int mark = ( _idx - 1 + i ) * MAX_CODE;
 		if ( mark < 200 ) {
 			continue;
 		}
@@ -277,12 +277,12 @@ void ScenePlay::drawExplosion( ) {
 	if ( _judge == Bullet::JUDGE::JUDGE_GREAT ||
 		 _judge == Bullet::JUDGE::JUDGE_GOOD ) {
 		const int CHIP_SIZE = 128;
-		int tx = _judge_count / ( EXPLOSION_DRAW_TIME / 18 );
+		int tx = _judge_count / ( EXPLOSION_DRAW_TIME / 9 ) + 9;
 		int ty = 2 ;
-		int sx1 = 160;
-		int sy1 = 200;
-		int sx2 = sx1 + CHIP_SIZE;
-		int sy2 = sy1 + CHIP_SIZE;
+		int sx1 = 150;
+		int sy1 = 190;
+		int sx2 = sx1 + CHIP_SIZE + 20;
+		int sy2 = sy1 + CHIP_SIZE + 20;
 		Drawer::drawGraph( tx, ty, sx1, sy1, sx2, sy2, CHIP_SIZE, CHIP_SIZE, _image[ IMAGE::IMAGE_EXPLOSION ] );
 	}
 }
@@ -324,8 +324,8 @@ void ScenePlay::drawNote( GamePtr game ) const {
 	Drawer::drawString( 400, y, "ƒI[ƒg:<1>" );
 }
 
-void ScenePlay::loadBullet( SongsPtr songs, int select ) {
-	std::vector< std::vector< char > > code_list = songs->getCode( select );
+void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
+	std::vector< std::vector< char > > code_list = songs->getCode( select, diff );
 	int code_list_size = code_list.size( );
 	for ( int i = 0; i < code_list_size; i++ ) {
 		int code_size = code_list[ i ].size( );
@@ -357,6 +357,15 @@ void ScenePlay::setJudge( Bullet::JUDGE judge ) {
 		_result.combo++;
 		if ( _result.max_combo < _result.combo ) {
 			_result.max_combo = _result.combo;
+		}
+		if ( _judge == Bullet::JUDGE::JUDGE_GREAT ) {
+			_result.great++;
+		}
+		if ( _judge == Bullet::JUDGE::JUDGE_GOOD ) {
+			_result.good++;
+		}
+		if ( _judge == Bullet::JUDGE::JUDGE_BAD ) {
+			_result.bad++;
 		}
 		addScore( );
 		playComboSound( );
@@ -418,14 +427,10 @@ void ScenePlay::playComboSound( ) {
 void ScenePlay::addScore( ) {
 	switch ( _judge ) {
 		case Bullet::JUDGE::JUDGE_GREAT:
-			_result.score += GREAT_SCORE;
+			_result.score += GREAT_SCORE * ( _result.combo + 10 ) / 10;
 			break;
 		case Bullet::JUDGE::JUDGE_GOOD:
-			_result.score += GOOD_SCORE;
+			_result.score += GOOD_SCORE * ( _result.combo + 10 ) / 10;
 			break;
 	}
-}
-
-void ScenePlay::autoPlay( ) {
-
 }
