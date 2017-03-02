@@ -11,6 +11,7 @@ static const int OFFSET = 0;
 static const int LOAD_IDX = 1000;
 static const int JUDGE_DRAW_TIME = 10;
 static const int EXPLOSION_DRAW_TIME = 9;
+static const int FLASH_DRAW_TIME = 5;
 static const int GREAT_SCORE = 10;
 static const int GOOD_SCORE = 5;
 static const int VOL = 230;//MAX255
@@ -21,7 +22,8 @@ _play_state( PLAY_STATE::PLAY_STATE_WAIT ),
 _before_seq( 0 ),
 _idx( 1 ),
 _result( ),
-_judge( Bullet::JUDGE::JUDGE_NONE ) {
+_judge( Bullet::JUDGE::JUDGE_NONE ),
+_flash_type( Bullet::TYPE::TYPE_NONE ) {
 	Drawer::changeFont( H_FONT );
 
 	Songs::SONG_INFO song_info = songs->getInfo( select );
@@ -79,6 +81,7 @@ void ScenePlay::update( GamePtr game ) {
 void ScenePlay::draw( GamePtr game ) {
 	drawBg( );
 	drawBarLine( );
+	drawFlash( game );
 	drawBullet( );
 	drawExplosion( );
 	drawMTaiko( game );
@@ -107,6 +110,8 @@ void ScenePlay::loadImages( ) {
 	_image[ IMAGE::IMAGE_COMBO_NUM		] = Drawer::loadGraph( "Resource/img/combonumber_l.png" );
 	_image[ IMAGE::IMAGE_JUDGE			] = Drawer::loadGraph( "Resource/img/judgement.png" );
 	_image[ IMAGE::IMAGE_EXPLOSION		] = Drawer::loadGraph( "Resource/img/explosion_upper.png" );
+	_image[ IMAGE::IMAGE_FLASH_RED		] = Drawer::loadGraph( "Resource/img/sfieldflash_red.png" );
+	_image[ IMAGE::IMAGE_FLASH_BLUE		] = Drawer::loadGraph( "Resource/img/sfieldflash_blue.png" );
 }
 
 void ScenePlay::loadSounds( ) {
@@ -299,6 +304,37 @@ void ScenePlay::drawExplosion( ) {
 	}
 }
 
+void ScenePlay::drawFlash( GamePtr game ) {
+	int image = 0;
+	if ( game->isDongLeft( ) || game->isDongRight( ) ) {
+		_flash_type = Bullet::TYPE::TYPE_DONG;
+		_flash_count = 0;
+	}
+	if ( game->isKaLeft( ) || game->isKaRight( ) ) {
+		_flash_type = Bullet::TYPE::TYPE_KA;
+		_flash_count = 0;
+	}
+	if ( _flash_type == Bullet::TYPE::TYPE_DONG ) {
+		image = _image[ IMAGE::IMAGE_FLASH_RED ];
+	}
+	if ( _flash_type == Bullet::TYPE::TYPE_KA ) {
+		image = _image[ IMAGE::IMAGE_FLASH_BLUE ];
+	}
+	if ( image != 0 ) {
+		int tx = 0;
+		int ty = 0;
+		int sx1 = JUDGE_X - 100;
+		int sy1 = 180;
+		int sx2 = WINDOW_WIDTH + 100;
+		int sy2 = sy1 + 150;
+		Drawer::drawGraph( tx, ty, sx1, sy1, sx2, sy2, 512, 65, _image[ IMAGE::IMAGE_FLASH_RED ], 200 - _flash_count * 20 );
+		if ( _flash_count > FLASH_DRAW_TIME ) {
+			_flash_type = Bullet::TYPE::TYPE_NONE;
+		}
+	}
+	_flash_count++;
+}
+
 void ScenePlay::drawCombo( int num ) const {
 	int tmp = num;
 	const int WIDTH = 32;
@@ -363,7 +399,14 @@ void ScenePlay::setJudge( Bullet::JUDGE judge ) {
 	if ( _judge != Bullet::JUDGE::JUDGE_THROUGH ) {
 		_judge_count = 0;
 	}
-	if ( _judge != Bullet::JUDGE::JUDGE_NONE ) {
+	if ( _judge == Bullet::JUDGE::JUDGE_BAD ||
+		 _judge == Bullet::JUDGE::JUDGE_THROUGH ) {
+		_result.bad++;
+		_result.combo = 0;
+	}
+	if ( _judge != Bullet::JUDGE::JUDGE_NONE &&
+		 _judge != Bullet::JUDGE::JUDGE_BAD &&
+		 _judge != Bullet::JUDGE::JUDGE_THROUGH ) {
 		_result.combo++;
 		if ( _result.max_combo < _result.combo ) {
 			_result.max_combo = _result.combo;
@@ -374,15 +417,8 @@ void ScenePlay::setJudge( Bullet::JUDGE judge ) {
 		if ( _judge == Bullet::JUDGE::JUDGE_GOOD ) {
 			_result.good++;
 		}
-		if ( _judge == Bullet::JUDGE::JUDGE_BAD ) {
-			_result.bad++;
-		}
 		addScore( );
 		playComboSound( );
-	}
-	if ( _judge == Bullet::JUDGE::JUDGE_BAD ||
-		 _judge == Bullet::JUDGE::JUDGE_THROUGH ) {
-		_result.combo = 0;
 	}
 }
 void ScenePlay::creatBullet( ) {

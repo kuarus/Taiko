@@ -67,6 +67,11 @@ int SceneResult::addNum( int num1, int num2 ) {
 			tmp /= 10;
 			digit++;
 		}
+		if ( digit < 2 ) {
+			if ( result < num2 ) {
+				result++;
+			}
+		}
 	
 		for ( int i = digit - 2; i >= 0; i-- ) {
 			int num = 1;

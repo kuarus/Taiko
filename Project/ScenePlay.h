@@ -75,6 +75,7 @@ private:
 	void drawMTaiko( GamePtr game ) const;
 	void drawJudge( ) const;
 	void drawExplosion( );
+	void drawFlash( GamePtr game );
 	void drawCombo( int num ) const;
 	void drawNote( GamePtr game ) const;
 	void loadBullet( SongsPtr songs, int select, Songs::DIFF diff );
@@ -88,11 +89,13 @@ private:
 	Game::RESULT _result;
 	Songs::SONG_DATA _song;
 	Bullet::JUDGE _judge;
+	Bullet::TYPE _flash_type;
 	bool _start;
 	int _idx;
 	int _music;
 	int _before_seq;
 	int _judge_count;
+	int _flash_count;
 	int _image[ IMAGE::MAX_IMAGE ];
 	int _combo_sound[ COMBO::MAX_COMBO ];
 	std::string _title;
