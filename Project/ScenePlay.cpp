@@ -26,7 +26,7 @@ _judge( Bullet::JUDGE::JUDGE_NONE ) {
 
 	Songs::SONG_INFO song_info = songs->getInfo( select );
 	std::string music_file = song_info.music;
-	
+	_title = song_info.title;
 	_music = Sound::load( music_file.c_str( ) );
 	_song = songs->getSongData( select, diff );
 	loadImages( );
@@ -236,7 +236,7 @@ void ScenePlay::drawBullet( ) const {
 
 
 void ScenePlay::drawTitle( ) const {
-	int x = WINDOW_WIDTH - _title.length( ) * ( FONT_SIZE / 2 ) - 20;
+	int x = WINDOW_WIDTH - _title.length( ) * ( FONT_SIZE / 2 ) - FONT_SIZE;
 	int y = 340;
 	Drawer::drawString( x, y, _title.c_str( ) );
 }
@@ -363,8 +363,7 @@ void ScenePlay::setJudge( Bullet::JUDGE judge ) {
 	if ( _judge != Bullet::JUDGE::JUDGE_THROUGH ) {
 		_judge_count = 0;
 	}
-	if ( _judge != Bullet::JUDGE::JUDGE_NONE &&
-		 _judge != Bullet::JUDGE::JUDGE_THROUGH ) {
+	if ( _judge != Bullet::JUDGE::JUDGE_NONE ) {
 		_result.combo++;
 		if ( _result.max_combo < _result.combo ) {
 			_result.max_combo = _result.combo;
