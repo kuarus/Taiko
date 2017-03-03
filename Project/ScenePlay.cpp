@@ -23,6 +23,7 @@ _before_seq( 0 ),
 _idx( 1 ),
 _result( ),
 _judge( Bullet::JUDGE::JUDGE_NONE ),
+_judge_draw( Bullet::JUDGE::JUDGE_NONE ),
 _flash_type( Bullet::TYPE::TYPE_NONE ) {
 	Drawer::changeFont( H_FONT );
 
@@ -137,8 +138,8 @@ void ScenePlay::updatePlay( GamePtr game ) {
 		_idx++;
 	}
 	_before_seq = seq;
-	updateJudge( );
 	updateBullet( seq, game );
+	updateJudge( );
 	creatBullet( );
 	if ( !Sound::isPlayingMusic( _music ) ) {
 		if ( _result.bad == 0 ) {
@@ -149,18 +150,47 @@ void ScenePlay::updatePlay( GamePtr game ) {
 }
 
 void ScenePlay::updateJudge( ) {
-	if ( _judge != Bullet::JUDGE::JUDGE_NONE &&
-		 _judge != Bullet::JUDGE::JUDGE_THROUGH ) {
-		if ( _judge_count > JUDGE_DRAW_TIME ) {
-				_judge = Bullet::JUDGE::JUDGE_NONE;
+	if ( _judge != Bullet::JUDGE::JUDGE_NONE ) {
+		switch ( _judge ) {
+		case Bullet::JUDGE::JUDGE_GREAT:
+			_result.great++;
+			_result.combo++;
+			break;
+		case Bullet::JUDGE::JUDGE_GOOD:
+			_result.good++;
+			_result.combo++;
+			break;
+		case Bullet::JUDGE::JUDGE_BAD:
+			_result.bad++;
+			_result.combo = 0;
+			break;
+		case Bullet::JUDGE::JUDGE_THROUGH:
+			_result.bad++;
+			_result.combo = 0;
+			break;
+		}
+		addScore( );
+		playComboSound( );
+		if ( _result.max_combo < _result.combo ) {
+			_result.max_combo = _result.combo;
 		}
 	}
-	_judge_count++;
+
+	if ( _judge_draw != Bullet::JUDGE::JUDGE_NONE ) {
+		if ( _judge_count > JUDGE_DRAW_TIME ) {
+			_judge_draw = Bullet::JUDGE::JUDGE_NONE;
+			_judge_count = 0;
+		}
+		_judge_count++;
+	}
+	_judge = Bullet::JUDGE::JUDGE_NONE;
 }
 
 void ScenePlay::updateBullet( int idx, GamePtr game ) {
 	std::list< BulletPtr >::const_iterator ite = _bullets.begin( );
 	std::list< BulletPtr > hits;
+	BulletPtr through_bullet = BulletPtr( );
+
 	while ( ite != _bullets.end( ) ) {
 		BulletPtr bullet = *ite;
 		if ( !bullet ) {
@@ -168,21 +198,27 @@ void ScenePlay::updateBullet( int idx, GamePtr game ) {
 			continue;
 		}
 		bullet->update( idx, game );
+		if ( !bullet->isTurn( ) ) {
+			Bullet::JUDGE judge = bullet->checkJudge( idx, game );
+			if ( judge != Bullet::JUDGE::JUDGE_NONE ) {
+				if ( judge == Bullet::JUDGE::JUDGE_THROUGH ) {
+					through_bullet = bullet;
+				}
+				if ( judge != Bullet::JUDGE::JUDGE_THROUGH ) {
+					hits.push_back( bullet );
+				}
+			}
+		}
 		if ( bullet->isOutSideScreen( ) ) {
 			ite = _bullets.erase( ite );
 			continue;
 		}
-		if ( !bullet->isTurn( ) ) {
-			Bullet::JUDGE judge = bullet->checkJudge( idx, game );
-			if ( judge != Bullet::JUDGE::JUDGE_NONE ) {
-				hits.push_back( *ite );
-			}
-		}
 		ite++;
 	}
+	
+	BulletPtr hit = BulletPtr( );
 	if ( hits.size( ) != 0 ) {
 		std::list< BulletPtr >::iterator hits_ite = hits.begin( );
-		BulletPtr hit = BulletPtr( );
 		int diff = 100;
 		while ( hits_ite != hits.end( ) ) {
 			BulletPtr bullet = *hits_ite;
@@ -201,6 +237,20 @@ void ScenePlay::updateBullet( int idx, GamePtr game ) {
 		if ( judge != Bullet::JUDGE::JUDGE_BAD &&
 			 judge != Bullet::JUDGE::JUDGE_THROUGH ) {
 			hit->setTurn( );
+		}
+	}
+	if ( !hit ) {
+		if ( through_bullet ) {
+			ite = _bullets.begin( );
+			while ( ite != _bullets.end( ) ) {
+				BulletPtr bullet = *ite;
+				if ( bullet == through_bullet ) {
+					setJudge( Bullet::JUDGE::JUDGE_THROUGH );
+					ite = _bullets.erase( ite );
+					break;
+				}
+				ite++;
+			}
 		}
 	}
 }
@@ -266,8 +316,8 @@ void ScenePlay::drawMTaiko( GamePtr game ) const {
 }
 
 void ScenePlay::drawJudge( ) const {
-	if ( _judge != Bullet::JUDGE::JUDGE_NONE &&
-		 _judge != Bullet::JUDGE::JUDGE_THROUGH ) {
+	if ( _judge_draw != Bullet::JUDGE::JUDGE_NONE &&
+		 _judge_draw != Bullet::JUDGE::JUDGE_THROUGH ) {
 		int chip_size = 50;
 		int tx = 0;
 		int ty = 0;
@@ -275,7 +325,7 @@ void ScenePlay::drawJudge( ) const {
 		int sy1 = 100 - _judge_count;
 		int sx2 = sx1 + chip_size * 2;
 		int sy2 = sy1 + chip_size * 2;
-		switch ( _judge ) {
+		switch ( _judge_draw ) {
 		case Bullet::JUDGE::JUDGE_GREAT:
 			ty = 0;
 			break;
@@ -291,8 +341,8 @@ void ScenePlay::drawJudge( ) const {
 }
 
 void ScenePlay::drawExplosion( ) {
-	if ( _judge == Bullet::JUDGE::JUDGE_GREAT ||
-		 _judge == Bullet::JUDGE::JUDGE_GOOD ) {
+	if ( _judge_draw == Bullet::JUDGE::JUDGE_GREAT ||
+		 _judge_draw == Bullet::JUDGE::JUDGE_GOOD ) {
 		const int CHIP_SIZE = 128;
 		int tx = _judge_count / ( EXPLOSION_DRAW_TIME / 9 ) + 9;
 		int ty = 2 ;
@@ -370,6 +420,15 @@ void ScenePlay::drawNote( GamePtr game ) const {
 	Drawer::drawString( 400, y, "終了:<Q><BackSpace><Escape>" );
 	y += FONT_SIZE;
 	Drawer::drawString( 400, y, "オート:<1>" );
+
+
+#if _DEBUG
+	Drawer::drawString( 0, FONT_SIZE * 2, "%d", _result.great );
+	Drawer::drawString( 0, FONT_SIZE * 3, "%d", _result.good );
+	Drawer::drawString( 0, FONT_SIZE * 4, "%d", _result.bad );
+
+
+#endif
 }
 
 void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
@@ -396,30 +455,7 @@ void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
 
 void ScenePlay::setJudge( Bullet::JUDGE judge ) {
 	_judge = judge;
-	if ( _judge != Bullet::JUDGE::JUDGE_THROUGH ) {
-		_judge_count = 0;
-	}
-	if ( _judge == Bullet::JUDGE::JUDGE_BAD ||
-		 _judge == Bullet::JUDGE::JUDGE_THROUGH ) {
-		_result.bad++;
-		_result.combo = 0;
-	}
-	if ( _judge != Bullet::JUDGE::JUDGE_NONE &&
-		 _judge != Bullet::JUDGE::JUDGE_BAD &&
-		 _judge != Bullet::JUDGE::JUDGE_THROUGH ) {
-		_result.combo++;
-		if ( _result.max_combo < _result.combo ) {
-			_result.max_combo = _result.combo;
-		}
-		if ( _judge == Bullet::JUDGE::JUDGE_GREAT ) {
-			_result.great++;
-		}
-		if ( _judge == Bullet::JUDGE::JUDGE_GOOD ) {
-			_result.good++;
-		}
-		addScore( );
-		playComboSound( );
-	}
+	_judge_draw = judge;
 }
 void ScenePlay::creatBullet( ) {
 	std::vector< Bullet::CODE >::const_iterator ite = _codes.begin( );

@@ -89,6 +89,7 @@ private:
 	Game::RESULT _result;
 	Songs::SONG_DATA _song;
 	Bullet::JUDGE _judge;
+	Bullet::JUDGE _judge_draw;
 	Bullet::TYPE _flash_type;
 	bool _start;
 	int _idx;

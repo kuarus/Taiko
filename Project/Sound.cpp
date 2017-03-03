@@ -21,12 +21,12 @@ void Sound::playSE( int handle, bool loop ) {
 	PlaySoundMem( handle, dx_type );
 }
 
-void Sound::playMusic( int handle, bool loop ) {
+void Sound::playMusic( int handle, bool loop, int position ) {
 	int dx_type = DX_PLAYTYPE_BACK;
 	if ( loop ) {
 		dx_type = DX_PLAYTYPE_LOOP;
 	}
-	PlaySoundMem( handle, dx_type );
+	PlayStreamSoundMem( handle, dx_type, position );
 }
 
 bool Sound::isPlayingMusic( int handle ) {

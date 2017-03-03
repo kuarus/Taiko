@@ -9,6 +9,7 @@ static const int INIT_SPEED_Y = -20;
 static const int JUDGE_GREAT_RANGE = 3;
 static const int JUDGE_GOOD_RANGE = 6;
 static const int JUDGE_BAD_RANGE = 10;
+static const int JUDGE_THROUGH_RANGE = 11;
 
 Bullet::Bullet( CODE code, int num ) {
 	_num = num;
