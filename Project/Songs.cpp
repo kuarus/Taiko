@@ -214,12 +214,12 @@ Songs::GENRE Songs::getGenre( std::string directory ) const {
 
 	while ( getline( ifs, tmp ) ) {
 		if ( strstr( tmp.c_str( ), "GenreName=" ) != NULL ) {
-			tmp.replace( 10, 0, "" );
+			tmp.replace( 0, 10, "" );
 			genre.name = tmp;
 			continue;
 		}
 		if ( strstr( tmp.c_str( ), "GenreColor=" ) != NULL ) {
-			tmp.replace( 11, 0, "" );
+			tmp.replace( 0, 11, "" );
 			genre.color_code = tmp;
 			continue;
 		}

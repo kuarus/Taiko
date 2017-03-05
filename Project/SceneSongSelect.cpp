@@ -21,6 +21,7 @@ _selecting_diff( Songs::DIFF::EASY ) {
 	_bg_image = Drawer::loadGraph( "Resource/img/song_select_bg.png" );
 	audition( );
 	Drawer::changeFont( V_FONT );
+	unsigned int color = Drawer::getColor( _song_list[ _select ].genre.color_code );
 }
 
 

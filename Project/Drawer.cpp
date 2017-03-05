@@ -1,7 +1,7 @@
 #include "Drawer.h"
 #include "DxLib.h"
 #include "define.h"
-
+#include <algorithm>
 Drawer::Drawer( ) {
 }
 
@@ -27,16 +27,13 @@ unsigned int Drawer::getColor( int red, int green, int blue ) {
 	return GetColor( red, green, blue );
 }
 
-unsigned int getColor( std::string color_code ) {
-	if ( color_code.size( ) != 7 || color_code.at( 0 ) != '#' ) {
-		return 0;
-	}
+unsigned int Drawer::getColor( std::string color_code ) {
 	std::string red_str   = color_code.substr( 1, 2 );
 	std::string green_str = color_code.substr( 3, 2 );
 	std::string blue_str  = color_code.substr( 5, 2 );
-	int red = std::stoi( red_str, nullptr, 16 );
-	int green = std::stoi( green_str, nullptr, 16 );;
-	int blue = std::stoi( blue_str, nullptr, 16 );;
+	int red   = std::stoi( red_str  , nullptr, 16 );
+	int green = std::stoi( green_str, nullptr, 16 );
+	int blue  = std::stoi( blue_str , nullptr, 16 );
 	return GetColor( red, green, blue );
 }
 
