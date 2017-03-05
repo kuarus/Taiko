@@ -27,3 +27,6 @@
 *.exe
 *.out
 *.app
+*.sdf
+Project/Debug/
+Project/Taiko.v12.suo

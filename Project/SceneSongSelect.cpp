@@ -21,7 +21,6 @@ _selecting_diff( Songs::DIFF::EASY ) {
 	_bg_image = Drawer::loadGraph( "Resource/img/song_select_bg.png" );
 	audition( );
 	Drawer::changeFont( V_FONT );
-	unsigned int color = Drawer::getColor( _song_list[ _select ].genre.color_code );
 }
 
 
@@ -94,7 +93,7 @@ void SceneSongSelect::drawSelecting( ) {
 		Drawer::drawVString( x, y + 20, diff_str.c_str( ), selecting );
 		for ( int j = 1 + i; j <= MAX_LEVEL; j++ ) {
 			std::string star = "™";
-			if ( MAX_LEVEL - j <= level ) {
+			if ( MAX_LEVEL - j < level ) {
 				star = "š";
 			}
 			Drawer::drawVString( x, y + FONT_SIZE * 5 + j * FONT_SIZE, star.c_str( ) );

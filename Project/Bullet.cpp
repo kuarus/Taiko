@@ -4,8 +4,8 @@
 
 static const int POSITION_Y = 200;
 static const int CHIP_SIZE = 64;
-static const int MOVE_SPEED = 30;
-static const int INIT_SPEED_Y = -20;
+static const int MOVE_SPEED = 35;
+static const int INIT_SPEED_Y = -38;
 static const int JUDGE_GREAT_RANGE = 4;
 static const int JUDGE_GOOD_RANGE = 9;
 static const int JUDGE_BAD_RANGE = 15;
@@ -38,8 +38,8 @@ void Bullet::update( int idx, GamePtr game ) {
 	if ( _turn ) {
 		_x += MOVE_SPEED;
 		_y += _speed;
-		_speed++;
-		if ( _x > 800 ) {
+		_speed += 3;
+		if ( _x > 1000 ) {
 			_x = - 200;
 		}
 	}

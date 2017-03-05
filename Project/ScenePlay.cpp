@@ -7,7 +7,7 @@
 static const int WAIT_APPEAR_TIME = 40;
 static const int MUSIC_VOL = 80;
 static const int MAX_CODE = 192;
-static const int OFFSET = 0;
+static const int OFFSET = 1000;
 static const int LOAD_IDX = 1000;
 static const int JUDGE_DRAW_TIME = 12;
 static const int EXPLOSION_DRAW_TIME = 9;
@@ -15,6 +15,7 @@ static const int FLASH_DRAW_TIME = 5;
 static const int GREAT_SCORE = 200;
 static const int GOOD_SCORE = 300;
 static const int VOL = 255;//MAX255
+static const int MAX_GAUGE = 36;
 
 ScenePlay::ScenePlay( int select, SongsPtr songs, Songs::DIFF diff ) :
 _mood( MOOD::MOOD_NORMAL ),
@@ -22,19 +23,24 @@ _play_state( PLAY_STATE::PLAY_STATE_WAIT ),
 _before_seq( 0 ),
 _idx( 1 ),
 _result( ),
+_count( 0 ),
 _judge( Bullet::JUDGE::JUDGE_NONE ),
 _judge_draw( Bullet::JUDGE::JUDGE_NONE ),
 _flash_type( Bullet::TYPE::TYPE_NONE ) {
-	Drawer::changeFont( H_FONT );
+	
 
+	Drawer::changeFont( H_FONT );
 	Songs::SONG_INFO song_info = songs->getInfo( select );
 	std::string music_file = song_info.music;
+	_song = songs->getSongData( select, diff );
 	_title = song_info.title;
 	_music = Sound::load( music_file.c_str( ) );
-	_song = songs->getSongData( select, diff );
+	loadBullet( songs, select, diff );
 	loadImages( );
 	loadSounds( );
-	loadBullet( songs, select, diff );
+	if ( _codes.size( ) != 0 ) {
+		_start_code = _codes.at( 0 );
+	}
 }
 
 
@@ -54,14 +60,14 @@ void ScenePlay::update( GamePtr game ) {
 	switch( _play_state ) {
 	case PLAY_STATE::PLAY_STATE_WAIT:
 		if ( game->isPushKey( Game::KEY::KEY_SPACE ) ) {
-			_play_state = PLAY_STATE::PLAY_STATE_INIT;
+			_play_state = PLAY_STATE::PLAY_STATE_START;
 		}
 		if ( game->isBack( ) ) {
 			game->setScene( Game::SCENE::SCENE_SONG_SELECT );
 		}
 		break;
-	case PLAY_STATE::PLAY_STATE_INIT:
-		initialize( );
+	case PLAY_STATE::PLAY_STATE_START:
+		updateStart( game );
 		break;
 	case PLAY_STATE::PLAY_STATE_PLAY:
 		updatePlay( game );
@@ -81,22 +87,18 @@ void ScenePlay::update( GamePtr game ) {
 
 void ScenePlay::draw( GamePtr game ) {
 	drawBg( );
+	drawMTaikoBack( );
+	drawSoulGauge( );
 	drawBarLine( );
 	drawFlash( game );
 	drawBullet( );
 	drawExplosion( );
-	drawMTaiko( game );
+	drawMTaikoFront( game );
 	drawJudge( );
 	drawTitle( );
 	drawCombo( _result.combo );
 	drawScore( _result.score );
 	drawNote( game );
-}
-
-void ScenePlay::initialize( ) {
-	Sound::playMusic( _music, false );
-	Sound::changeVol( VOL, _music );
-	_play_state = PLAY_STATE::PLAY_STATE_PLAY;
 }
 
 void ScenePlay::loadImages( ) {
@@ -115,6 +117,8 @@ void ScenePlay::loadImages( ) {
 	_image[ IMAGE::IMAGE_EXPLOSION		] = Drawer::loadGraph( "Resource/img/explosion_upper.png" );
 	_image[ IMAGE::IMAGE_FLASH_RED		] = Drawer::loadGraph( "Resource/img/sfieldflash_red.png" );
 	_image[ IMAGE::IMAGE_FLASH_BLUE		] = Drawer::loadGraph( "Resource/img/sfieldflash_blue.png" );
+	_image[ IMAGE::IMAGE_NORMAGAUGE		] = Drawer::loadGraph( "Resource/img/normagauge.png" );
+	_image[ IMAGE::IMAGE_SOUL			] = Drawer::loadGraph( "Resource/img/soul.png" );
 }
 
 void ScenePlay::loadSounds( ) {
@@ -131,9 +135,26 @@ void ScenePlay::loadSounds( ) {
 	_combo_sound[ COMBO::COMBO_FULL ] = Sound::load( "Resource/Sound/voice_fullcombo.wav" );
 }
 
+void ScenePlay::updateStart( GamePtr game ) {
+	int now = _count * 100 / 6 - OFFSET;
+	int seq = (int)(double)( ( now + _song.offset * 1000 ) / _song.pitch );
+	int mark = _idx * MAX_CODE;
+	_before_seq = seq;
+	updateBullet( seq, game );
+	creatBullet( );
+
+	if ( ( seq > (int)( ( _song.offset * 1000 ) / _song.pitch ) ) ||
+		 ( _start_code.idx - OFFSET > (int)( ( _song.offset * 1000 ) / _song.pitch ) ) ) { 
+		Sound::playMusic( _music, false );
+		Sound::changeVol( VOL, _music );
+		_play_state = PLAY_STATE::PLAY_STATE_PLAY;
+	}
+	_count++;
+}
+
 void ScenePlay::updatePlay( GamePtr game ) {
 	int now = Sound::getTime( _music );
-	int seq = (int)(double)( ( now - OFFSET + _song.offset * 1000 ) / _song.pitch );
+	int seq = (int)(double)( ( now + _song.offset * 1000 ) / _song.pitch );
 	int mark = _idx * MAX_CODE;
 	if ( seq >= mark &&
 		_before_seq < mark ) {
@@ -179,10 +200,10 @@ void ScenePlay::updateJudge( ) {
 	}
 
 	if ( _judge_draw != Bullet::JUDGE::JUDGE_NONE ) {
-		if ( _judge_count > JUDGE_DRAW_TIME ) {
+		if ( _count > JUDGE_DRAW_TIME ) {
 			_judge_draw = Bullet::JUDGE::JUDGE_NONE;
 		}
-		_judge_count++;
+		_count++;
 	}
 	_judge = Bullet::JUDGE::JUDGE_NONE;
 }
@@ -297,11 +318,20 @@ void ScenePlay::drawTitle( ) const {
 	Drawer::drawString( x, y, _title.c_str( ) );
 }
 
-void ScenePlay::drawMTaiko( GamePtr game ) const {
+void ScenePlay::drawMTaikoBack( ) const {
+	const int ROAD_Y = 180;
+	int x1 = 165;
+	int x2 = 450;
+	int y1 = ROAD_Y + 42;
+	int y2 = y1 + 55;
+	Drawer::drawGraph( 1, 0, x1, -135, x2, 335, 188, 512, _image[ IMAGE::IMAGE_MTAIKO ] );
+}
+
+void ScenePlay::drawMTaikoFront( GamePtr game ) const {
 	const int ROAD_Y = 180;
 	int y1 = ROAD_Y + 42;
 	int y2 = y1 + 55;
-	Drawer::drawGraph( 0, 0, 0, -135, 450, 335, 512, 512, _image[ IMAGE::IMAGE_MTAIKO ] );
+	Drawer::drawGraph( 0, 0, 0, -135, 165, 335, 188, 512, _image[ IMAGE::IMAGE_MTAIKO ] );
 	if ( game->isDongLeft( ) ) {
 		Drawer::drawGraph( 0, 0, 60 - 32, y1, 115 - 32, y2, 32, 32, _image[ IMAGE::IMAGE_MTAIKO_DONG ] );
 	}
@@ -323,7 +353,7 @@ void ScenePlay::drawJudge( ) const {
 		int tx = 0;
 		int ty = 0;
 		int sx1 = 170;
-		int sy1 = 100 - _judge_count;
+		int sy1 = 100 - _count;
 		int sx2 = sx1 + chip_size * 2;
 		int sy2 = sy1 + chip_size * 2;
 		switch ( _judge_draw ) {
@@ -345,7 +375,7 @@ void ScenePlay::drawExplosion( ) {
 	if ( _judge_draw == Bullet::JUDGE::JUDGE_GREAT ||
 		 _judge_draw == Bullet::JUDGE::JUDGE_GOOD ) {
 		const int CHIP_SIZE = 128;
-		int tx = _judge_count / ( EXPLOSION_DRAW_TIME / 9 ) + 9;
+		int tx = _count / ( EXPLOSION_DRAW_TIME / 9 ) + 9;
 		int ty = 2 ;
 		int sx1 = 150;
 		int sy1 = 190;
@@ -412,7 +442,7 @@ void ScenePlay::drawScore( int score ) const {
 	int tmp = score;
 	const int WIDTH = 32;
 	const int HEIGHT = 64;
-	int x1 = 130;
+	int x1 = 140;
 	int y1 = 170;
 	int y2 = y1 + 50;
 	while ( tmp != 0 ) {
@@ -424,6 +454,26 @@ void ScenePlay::drawScore( int score ) const {
 	}
 }
 
+void ScenePlay::drawSoulGauge( ) const {
+	const int WIDTH = 12;
+	const int HEIGHT = 32;
+	int x1 = 304;
+	int y1 = 124;
+	int y2 = y1 + 58;
+	int tx = 0;
+	for ( int i = -8; i < MAX_GAUGE; i++ ) {
+		int x2 = x1 + 28;
+		tx = i;
+		if ( i < 1 ) {
+			tx = 1;
+		}
+		Drawer::drawGraph( tx, 0, x1, y1, x2, y2, WIDTH, HEIGHT, _image[ IMAGE::IMAGE_NORMAGAUGE ] );
+		x1 += 28;
+	}
+	Drawer::drawBox( 960, y1 + 5, WINDOW_WIDTH, y2 - 1, Drawer::getColor( 0, 0, 0 ) );
+	Drawer::drawGraph( 0, 0, 950, 90, WINDOW_WIDTH, 220, 122, 122, _image[ IMAGE::IMAGE_SOUL ] );
+}
+
 void ScenePlay::drawNote( GamePtr game ) const {
 	if ( _play_state == PLAY_STATE::PLAY_STATE_WAIT ) {
 		Drawer::drawString( 350, 240, "Pleas push SPACE key  start" );
@@ -431,8 +481,6 @@ void ScenePlay::drawNote( GamePtr game ) const {
 	if ( game->isAutomatic( ) ) {
 		Drawer::drawString( 0, 0, "オート中" );
 	}
-
-	Drawer::drawString( 800, 10, "SCORE:%d", _result.score );
 
 	int y = 400;
 	Drawer::drawBox( 350, y - 10, 1000, y + FONT_SIZE * 5, Drawer::getColor( 200, 55, 55 ) );
@@ -443,15 +491,6 @@ void ScenePlay::drawNote( GamePtr game ) const {
 	Drawer::drawString( 400, y, "終了:<Q><BackSpace><Escape>" );
 	y += FONT_SIZE;
 	Drawer::drawString( 400, y, "オート:<1>" );
-
-
-#if _DEBUG
-	Drawer::drawString( 0, FONT_SIZE * 2, "%d", _result.great );
-	Drawer::drawString( 0, FONT_SIZE * 3, "%d", _result.good );
-	Drawer::drawString( 0, FONT_SIZE * 4, "%d", _result.bad );
-
-
-#endif
 }
 
 void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
@@ -479,7 +518,7 @@ void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
 void ScenePlay::setJudge( Bullet::JUDGE judge ) {
 	_judge = judge;
 	_judge_draw = judge;
-	_judge_count = 0;
+	_count = 0;
 }
 void ScenePlay::creatBullet( ) {
 	std::vector< Bullet::CODE >::const_iterator ite = _codes.begin( );

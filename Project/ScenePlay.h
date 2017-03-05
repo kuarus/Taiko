@@ -25,7 +25,7 @@ private:
 	};
 	enum PLAY_STATE {
 		PLAY_STATE_WAIT,
-		PLAY_STATE_INIT,
+		PLAY_STATE_START,
 		PLAY_STATE_PLAY,
 		PLAY_STATE_END,
 		MAX_PLAY_STATE
@@ -46,6 +46,8 @@ private:
 		IMAGE_EXPLOSION,
 		IMAGE_FLASH_RED,
 		IMAGE_FLASH_BLUE,
+		IMAGE_NORMAGAUGE,
+		IMAGE_SOUL,
 		MAX_IMAGE
 	};
 	enum COMBO {
@@ -63,9 +65,9 @@ private:
 		MAX_COMBO,
 	};
 private:
-	void initialize( );
 	void loadImages( );
 	void loadSounds( );
+	void updateStart( GamePtr game );
 	void updatePlay( GamePtr game );
 	void updateJudge( );
 	void updateBullet( int idx, GamePtr game );
@@ -73,12 +75,14 @@ private:
 	void drawBarLine( ) const;
 	void drawBullet( ) const;
 	void drawTitle( ) const;
-	void drawMTaiko( GamePtr game ) const;
+	void drawMTaikoBack( ) const;
+	void drawMTaikoFront( GamePtr game ) const;
 	void drawJudge( ) const;
 	void drawExplosion( );
 	void drawFlash( GamePtr game );
 	void drawCombo( int combo ) const;
 	void drawScore( int score ) const;
+	void drawSoulGauge( ) const;
 	void drawNote( GamePtr game ) const;
 	void loadBullet( SongsPtr songs, int select, Songs::DIFF diff );
 	void setJudge( Bullet::JUDGE judge );
@@ -93,11 +97,12 @@ private:
 	Bullet::JUDGE _judge;
 	Bullet::JUDGE _judge_draw;
 	Bullet::TYPE _flash_type;
+	Bullet::CODE _start_code;
 	bool _start;
 	int _idx;
 	int _music;
 	int _before_seq;
-	int _judge_count;
+	int _count;
 	int _flash_count;
 	int _image[ IMAGE::MAX_IMAGE ];
 	int _combo_sound[ COMBO::MAX_COMBO ];

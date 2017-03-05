@@ -107,14 +107,17 @@ int Songs::getLevel( int idx, DIFF diff ) const {
 				break;
 			}
 		}
+		//level = std::atoi( level_str.c_str( ) );
 	}
-	while ( getline( ifs, level_str ) ) {
-		if ( strstr( level_str.c_str( ), "LEVEL:" ) != NULL ) {
-			level_str.replace( 0, 6, "" );
-			break;
+	//if ( diff == DIFF::ONI ) {
+		while ( getline( ifs, level_str ) ) {
+			if ( strstr( level_str.c_str( ), "LEVEL:" ) != NULL ) {
+				level_str.replace( 0, 6, "" );
+				level = std::atoi( level_str.c_str( ) );
+				break;
+			}
 		}
-	}
-	level = std::atoi( level_str.c_str( ) );
+	//}
 	return level;
 }
 

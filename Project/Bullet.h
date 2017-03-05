@@ -25,9 +25,11 @@ public:
 	};
 	struct CODE {
 		int idx;
+		int num;
 		TYPE type;
 		CODE( ) {
 			this->idx = 0;
+			this->num = 0;
 			this->type = TYPE::TYPE_NONE;
 		}
 	};
