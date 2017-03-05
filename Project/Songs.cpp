@@ -32,9 +32,7 @@ Songs::SONG_DATA Songs::getSongData( int idx, DIFF diff ) const {
 	while ( getline( ifs, tmp ) ) {
 		if ( strstr( tmp.c_str( ), "PITCH:" ) != NULL ) {
 			tmp.replace( 0, 6, "" );
-			double d_pitch = std::stod( tmp, 0 );
-			d_pitch *= 100;
-			song_data.pitch = (int)d_pitch;
+			song_data.pitch = std::stod( tmp, 0 );
 			continue;
 		}
 		if ( strstr( tmp.c_str( ), "OFFSET:" ) != NULL ) {
@@ -44,9 +42,8 @@ Songs::SONG_DATA Songs::getSongData( int idx, DIFF diff ) const {
 				tmp.replace( 0, 1, "" );
 				minus = true;
 			}
-			double d_offset = std::stod( tmp, 0 );
-			d_offset *= 1000;
-			song_data.offset = (int)d_offset;
+			song_data.offset = std::stod( tmp, 0 );
+			
 			if ( minus ) {
 				song_data.offset *= -1;
 			}

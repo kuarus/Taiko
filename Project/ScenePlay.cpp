@@ -9,12 +9,12 @@ static const int MUSIC_VOL = 80;
 static const int MAX_CODE = 192;
 static const int OFFSET = 0;
 static const int LOAD_IDX = 1000;
-static const int JUDGE_DRAW_TIME = 10;
+static const int JUDGE_DRAW_TIME = 12;
 static const int EXPLOSION_DRAW_TIME = 9;
 static const int FLASH_DRAW_TIME = 5;
-static const int GREAT_SCORE = 10;
-static const int GOOD_SCORE = 5;
-static const int VOL = 230;//MAX255
+static const int GREAT_SCORE = 200;
+static const int GOOD_SCORE = 300;
+static const int VOL = 255;//MAX255
 
 ScenePlay::ScenePlay( int select, SongsPtr songs, Songs::DIFF diff ) :
 _mood( MOOD::MOOD_NORMAL ),
@@ -89,6 +89,7 @@ void ScenePlay::draw( GamePtr game ) {
 	drawJudge( );
 	drawTitle( );
 	drawCombo( _result.combo );
+	drawScore( _result.score );
 	drawNote( game );
 }
 
@@ -109,6 +110,7 @@ void ScenePlay::loadImages( ) {
 	_image[ IMAGE::IMAGE_MTAIKO_DONG	] = Drawer::loadGraph( "Resource/img/mtaikoflash_red.png" );
 	_image[ IMAGE::IMAGE_MTAIKO_KA		] = Drawer::loadGraph( "Resource/img/mtaikoflash_blue.png" );
 	_image[ IMAGE::IMAGE_COMBO_NUM		] = Drawer::loadGraph( "Resource/img/combonumber_l.png" );
+	_image[ IMAGE::IMAGE_SCORE_NUM		] = Drawer::loadGraph( "Resource/img/font_m.png" );
 	_image[ IMAGE::IMAGE_JUDGE			] = Drawer::loadGraph( "Resource/img/judgement.png" );
 	_image[ IMAGE::IMAGE_EXPLOSION		] = Drawer::loadGraph( "Resource/img/explosion_upper.png" );
 	_image[ IMAGE::IMAGE_FLASH_RED		] = Drawer::loadGraph( "Resource/img/sfieldflash_red.png" );
@@ -131,7 +133,7 @@ void ScenePlay::loadSounds( ) {
 
 void ScenePlay::updatePlay( GamePtr game ) {
 	int now = Sound::getTime( _music );
-	int seq = ( now - OFFSET + _song.offset ) * 100 / _song.pitch;
+	int seq = (int)(double)( ( now - OFFSET + _song.offset * 1000 ) / _song.pitch );
 	int mark = _idx * MAX_CODE;
 	if ( seq >= mark &&
 		_before_seq < mark ) {
@@ -179,7 +181,6 @@ void ScenePlay::updateJudge( ) {
 	if ( _judge_draw != Bullet::JUDGE::JUDGE_NONE ) {
 		if ( _judge_count > JUDGE_DRAW_TIME ) {
 			_judge_draw = Bullet::JUDGE::JUDGE_NONE;
-			_judge_count = 0;
 		}
 		_judge_count++;
 	}
@@ -385,19 +386,41 @@ void ScenePlay::drawFlash( GamePtr game ) {
 	_flash_count++;
 }
 
-void ScenePlay::drawCombo( int num ) const {
-	int tmp = num;
+void ScenePlay::drawCombo( int combo ) const {
+	int tmp0 = combo;
+	int tmp1 = combo;
 	const int WIDTH = 32;
 	const int HEIGHT = 64;
-	int x1 = 110;
-	int y1 = 165;
+	int x1 = 85;
+	int y1 = 220;
 	int y2 = y1 + 55;
-	while ( tmp != 0 ) {
-		int number = tmp % 10;
-		tmp /= 10;
+	int digit = 0;
+	while ( tmp0 != 0 ) {
+		tmp0 /= 10;
+		x1 += 15;
+	}
+	while ( tmp1 != 0 ) {
+		int number = tmp1 % 10;
+		tmp1 /= 10;
 		x1 -= 30;
 		int x2 = x1 + 30;
 		Drawer::drawGraph( number, 0, x1, y1, x2, y2, WIDTH, HEIGHT, _image[ IMAGE::IMAGE_COMBO_NUM ] );
+	}
+}
+
+void ScenePlay::drawScore( int score ) const {
+	int tmp = score;
+	const int WIDTH = 32;
+	const int HEIGHT = 64;
+	int x1 = 130;
+	int y1 = 170;
+	int y2 = y1 + 50;
+	while ( tmp != 0 ) {
+		int number = tmp % 10;
+		tmp /= 10;
+		x1 -= 20;
+		int x2 = x1 + 30;
+		Drawer::drawGraph( number, 0, x1, y1, x2, y2, WIDTH, HEIGHT, _image[ IMAGE::IMAGE_SCORE_NUM ] );
 	}
 }
 
@@ -456,6 +479,7 @@ void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
 void ScenePlay::setJudge( Bullet::JUDGE judge ) {
 	_judge = judge;
 	_judge_draw = judge;
+	_judge_count = 0;
 }
 void ScenePlay::creatBullet( ) {
 	std::vector< Bullet::CODE >::const_iterator ite = _codes.begin( );
@@ -474,7 +498,7 @@ void ScenePlay::creatBullet( ) {
 void ScenePlay::playComboSound( ) {
 	switch ( _result.combo ) {
 	case 50:
-		Sound::playSE( _combo_sound[ COMBO::COMBO_50 ], false );
+		Sound::playSE( _combo_sound[ COMBO::COMBO_50  ], false );
 		break;
 	case 100:
 		Sound::playSE( _combo_sound[ COMBO::COMBO_100 ], false );
@@ -509,10 +533,10 @@ void ScenePlay::playComboSound( ) {
 void ScenePlay::addScore( ) {
 	switch ( _judge ) {
 	case Bullet::JUDGE::JUDGE_GREAT:
-		_result.score += GREAT_SCORE * ( _result.combo + 10 ) / 10;
+		_result.score += (int)( (double)( GREAT_SCORE * ( _result.combo + 10 ) / 10 ) ) / 10;
 		break;
 	case Bullet::JUDGE::JUDGE_GOOD:
-		_result.score += GOOD_SCORE * ( _result.combo + 10 ) / 10;
+		_result.score += (int)( (double)( GOOD_SCORE  * ( _result.combo + 10 ) / 10 ) ) / 10;
 		break;
 	}
 }

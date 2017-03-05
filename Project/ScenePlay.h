@@ -41,6 +41,7 @@ private:
 		IMAGE_MTAIKO_DONG,
 		IMAGE_MTAIKO_KA,
 		IMAGE_COMBO_NUM,
+		IMAGE_SCORE_NUM,
 		IMAGE_JUDGE,
 		IMAGE_EXPLOSION,
 		IMAGE_FLASH_RED,
@@ -76,7 +77,8 @@ private:
 	void drawJudge( ) const;
 	void drawExplosion( );
 	void drawFlash( GamePtr game );
-	void drawCombo( int num ) const;
+	void drawCombo( int combo ) const;
+	void drawScore( int score ) const;
 	void drawNote( GamePtr game ) const;
 	void loadBullet( SongsPtr songs, int select, Songs::DIFF diff );
 	void setJudge( Bullet::JUDGE judge );

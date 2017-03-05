@@ -18,9 +18,11 @@ void Drawer::drawGraph( int tx, int ty, int sx1, int sy1, int sx2, int sy2, int 
 }
 
 void Drawer::drawBox( int x1, int y1, int x2, int y2, unsigned int color ) {
-	int diff = 4;
+	int interval = 5;
+	SetDrawBright( 180, 180, 180 );
 	DrawBox( x1, y1, x2, y2, color, TRUE );
-	DrawBox( x1 + diff, y1 + diff, x2 - diff, y2 - diff, color - GetColor( 50, 50, 50 ), TRUE );
+	SetDrawBright( 255, 255, 255 );
+	DrawBox( x1 + interval, y1 + interval, x2 - interval, y2 - interval, color, TRUE );
 }
 
 unsigned int Drawer::getColor( int red, int green, int blue ) {
@@ -28,6 +30,9 @@ unsigned int Drawer::getColor( int red, int green, int blue ) {
 }
 
 unsigned int Drawer::getColor( std::string color_code ) {
+	if ( color_code.size( ) == 0 ) {
+		return GetColor( 0, 100, 0 );
+	}
 	std::string red_str   = color_code.substr( 1, 2 );
 	std::string green_str = color_code.substr( 3, 2 );
 	std::string blue_str  = color_code.substr( 5, 2 );

@@ -59,8 +59,9 @@ void SceneSongSelect::draw( GamePtr game ) {
 	drawSongList( );
 }
 
-void SceneSongSelect::drawSelecting( unsigned int color ) {
+void SceneSongSelect::drawSelecting( ) {
 	std::string title =  _song_list[ _select ].title;
+	unsigned int color = Drawer::getColor( _song_list[ _select ].genre.color_code );
 	int x = SELECTING_X;
 	int y = MENU_Y;
 	drawSong( x, y, x + SELECTING_WIDTH, y + MENU_HEIGHT, color, _select );
@@ -109,15 +110,14 @@ void SceneSongSelect::drawSong( int x1, int y1, int x2, int y2, unsigned int col
 }
 
 void SceneSongSelect::drawSongList( ) {
-	std::vector< Songs::SONG_INFO > song_list = _songs->getSongInfoList( );
-	int list_size = song_list.size( );
+	int list_size = _song_list.size( );
 	int menu_width = 150;
 	int sx1 = SELECTING_X;
 	int sx2 = sx1 + menu_width;
 	int sy1 = MENU_Y;
 	int sy2 = sy1 + MENU_HEIGHT;
-	int menu_color = Drawer::getColor( 50, 255, 50 );
-	drawSelecting( menu_color );
+	//int menu_color = Drawer::getColor( 50, 255, 50 );
+	drawSelecting( );
 
 	for ( int i = 0; i < VIEW_NUM; i++ ) {
 		int idx0 = ( _select + i + 1 ) % list_size;
@@ -127,8 +127,10 @@ void SceneSongSelect::drawSongList( ) {
 		}
 		int x0 = SELECTING_X + SELECTING_WIDTH + INTERVAL + i * ( menu_width + INTERVAL );
 		int x1 = SELECTING_X - INTERVAL - menu_width - i * ( menu_width + INTERVAL );
-		drawSong( x0, MENU_Y, x0 + menu_width, MENU_HEIGHT, menu_color, idx0 );
-		drawSong( x1, MENU_Y, x1 + menu_width, MENU_HEIGHT, menu_color, idx1 );
+		unsigned int color0 = Drawer::getColor( _song_list[ idx0 ].genre.color_code );
+		unsigned int color1 = Drawer::getColor( _song_list[ idx1 ].genre.color_code );
+		drawSong( x0, MENU_Y, x0 + menu_width, MENU_HEIGHT, color0, idx0 );
+		drawSong( x1, MENU_Y, x1 + menu_width, MENU_HEIGHT, color1, idx1 );
 	}
 }
 

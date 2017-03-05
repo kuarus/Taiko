@@ -6,10 +6,10 @@ static const int POSITION_Y = 200;
 static const int CHIP_SIZE = 64;
 static const int MOVE_SPEED = 30;
 static const int INIT_SPEED_Y = -20;
-static const int JUDGE_GREAT_RANGE = 3;
-static const int JUDGE_GOOD_RANGE = 6;
-static const int JUDGE_BAD_RANGE = 10;
-static const int JUDGE_THROUGH_RANGE = 11;
+static const int JUDGE_GREAT_RANGE = 4;
+static const int JUDGE_GOOD_RANGE = 9;
+static const int JUDGE_BAD_RANGE = 15;
+static const int JUDGE_THROUGH_RANGE = 16;
 
 Bullet::Bullet( CODE code, int num ) {
 	_num = num;
@@ -95,7 +95,7 @@ bool Bullet::checkPush( int idx, GamePtr game ) const {
 	if ( diff < 0 ) {
 		diff *= -1;
 	}
-	if ( game->isAutomatic( ) && diff <= 1 ) {
+	if ( game->isAutomatic( ) && diff <= 2 ) {
 		automatic_just = true;
 	}
 	switch ( _code.type ) {

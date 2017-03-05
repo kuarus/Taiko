@@ -19,6 +19,7 @@ _is_finish( false ){
 
 	ChangeWindowMode( TRUE );
 	SetGraphMode( WINDOW_WIDTH, WINDOW_HEIGHT, 16 );
+	SetAlwaysRunFlag( TRUE );
 	if ( DxLib_Init( ) == -1 ) {
 		return;
 	}

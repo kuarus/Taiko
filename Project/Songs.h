@@ -22,8 +22,8 @@ public:
 		std::string filename;
 	};
 	struct SONG_DATA {
-		int pitch;
-		int offset;
+		double pitch;
+		double offset;
 		std::vector< std::vector< char > > codes;
 		SONG_DATA( ) {
 			this->pitch = 0;

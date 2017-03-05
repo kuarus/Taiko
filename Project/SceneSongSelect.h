@@ -15,7 +15,7 @@ private:
 		MAX_STATE,
 	};
 private:
-	void drawSelecting( unsigned int color );
+	void drawSelecting( );
 	void drawSong( int x1, int y1, int x2, int y2, unsigned int color, int idx );
 	void drawSongList( );
 	void select( GamePtr game );
