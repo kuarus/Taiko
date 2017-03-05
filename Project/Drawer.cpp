@@ -27,6 +27,20 @@ unsigned int Drawer::getColor( int red, int green, int blue ) {
 	return GetColor( red, green, blue );
 }
 
+unsigned int getColor( std::string color_code ) {
+	if ( color_code.size( ) != 7 || color_code.at( 0 ) != '#' ) {
+		return 0;
+	}
+	std::string red_str   = color_code.substr( 1, 2 );
+	std::string green_str = color_code.substr( 3, 2 );
+	std::string blue_str  = color_code.substr( 5, 2 );
+	int red = std::stoi( red_str, nullptr, 16 );
+	int green = std::stoi( green_str, nullptr, 16 );;
+	int blue = std::stoi( blue_str, nullptr, 16 );;
+	return GetColor( red, green, blue );
+}
+
+
 void Drawer::drawVString( int x, int y, const char* str, bool selecting ) {
 	int color = GetColor( 255, 255, 255 );
 	if ( selecting ) {

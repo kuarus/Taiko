@@ -11,9 +11,12 @@ public:
 		EASY,
 		MAX_DIFF
 	};
-
+	struct GENRE {
+		std::string name;
+		std::string color_code;
+	};
 	struct SONG_INFO {
-		std::string genre;
+		GENRE genre;
 		std::string title;
 		std::string music;
 		std::string filename;
@@ -38,8 +41,8 @@ public:
 private:
 	void loadSongInfoList( );
 	std::vector< std::string > getDirectoryList( ) const;
-	std::string getGenre( std::string directory ) const;
-	SONG_INFO getInfo( std::string filename, std::string genre, std::string directory ) const;
+	GENRE getGenre( std::string directory ) const;
+	SONG_INFO getInfo( std::string filename, GENRE genre, std::string directory ) const;
 	std::vector< std::vector< char > > getCode( std::string filename, DIFF diff ) const;
 private:
 	std::vector< SONG_INFO > _song_info_list;

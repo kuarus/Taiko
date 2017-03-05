@@ -129,7 +129,7 @@ void Songs::loadSongInfoList( ) {
 	std::vector< std::string >::const_iterator dir_ite = directory_list.begin( );
 	while ( dir_ite != directory_list.end( ) ) {
 		std::string directory = DIRECTORY + (*dir_ite) + "/";
-		std::string genre = getGenre( directory );
+		GENRE genre = getGenre( directory );
 
 		WIN32_FIND_DATA win32fd;
 		std::string sarch = DIRECTORY + (*dir_ite) + "\\*." + EXTENTION;
@@ -150,7 +150,7 @@ void Songs::loadSongInfoList( ) {
 	}
 }
 
-Songs::SONG_INFO Songs::getInfo( std::string filename, std::string genre, std::string directory ) const {
+Songs::SONG_INFO Songs::getInfo( std::string filename, Songs::GENRE genre, std::string directory ) const {
 	SONG_INFO song_info = SONG_INFO( );
 	song_info.genre = genre;
 	song_info.filename = directory + filename;
@@ -202,22 +202,32 @@ std::vector< std::string > Songs::getDirectoryList( ) const {
 	return directory_list;
 }
 
-std::string Songs::getGenre( std::string directory ) const {
-	std::string genre_name = "";
+Songs::GENRE Songs::getGenre( std::string directory ) const {
+	std::string tmp = "";
+	GENRE genre;
 
 	std::string filename = directory + "/_info.ini";
 	std::ifstream ifs( filename );
 	if ( ifs.fail( ) ) {
-		return genre_name;
+		return genre;
 	}
 
-	while ( getline( ifs, genre_name ) ) {
-		if ( strstr( genre_name.c_str( ), "GenreName=" ) != NULL ) {
-			genre_name.replace( 10, 0, "" );
+	while ( getline( ifs, tmp ) ) {
+		if ( strstr( tmp.c_str( ), "GenreName=" ) != NULL ) {
+			tmp.replace( 10, 0, "" );
+			genre.name = tmp;
+			continue;
+		}
+		if ( strstr( tmp.c_str( ), "GenreColor=" ) != NULL ) {
+			tmp.replace( 11, 0, "" );
+			genre.color_code = tmp;
+			continue;
+		}
+		if ( genre.name.size( ) != 0 && genre.color_code.size( ) != 0 ) {
 			break;
 		}
 	}
-	return genre_name;
+	return genre;
 }
 
 std::vector< std::vector< char > > Songs::getCode( std::string filename, DIFF diff ) const {
