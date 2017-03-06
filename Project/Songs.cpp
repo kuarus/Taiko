@@ -22,9 +22,9 @@ std::vector< Songs::SONG_INFO > Songs::getSongInfoList( ) const {
 Songs::SONG_DATA Songs::getSongData( int idx, DIFF diff ) const {
 	SONG_DATA song_data = SONG_DATA( );
 	std::string filename = _song_info_list[ idx ].filename;
-	song_data.codes = getCode( filename, diff );
 	std::string tmp;
 	std::ifstream ifs( filename );
+	double bpm = 0;
 	if ( ifs.fail( ) ) {
 		return song_data;
 	}
@@ -37,9 +37,9 @@ Songs::SONG_DATA Songs::getSongData( int idx, DIFF diff ) const {
 		//}
 		if ( strstr( tmp.c_str( ), "BPM:" ) != NULL ) {
 			tmp.replace( 0, 4, "" );
-			double bpm = std::stod( tmp, 0 );
-			double pitch = 60.0 / bpm * 20.0;
-			song_data.pitch = pitch;
+			bpm = std::stod( tmp, 0 );
+			//double pitch = 60.0 / bpm * 20.830;
+			//song_data.pitch = pitch;
 			continue;
 		}
 		if ( strstr( tmp.c_str( ), "OFFSET:" ) != NULL ) {
@@ -58,13 +58,14 @@ Songs::SONG_DATA Songs::getSongData( int idx, DIFF diff ) const {
 		}
 
 		if ( song_data.offset != 0 &&
-			 song_data.pitch != 0 ) {
+			 bpm != 0 ) {
 			break;
 		}
 	}
+	song_data.measures = getCode( filename, diff, bpm );
 
-	if ( song_data.pitch == 0 ) {
-		song_data.pitch = 1000;
+	if ( bpm == 0 ) {
+		bpm = 8;
 	}
 
 	return song_data;
@@ -237,8 +238,9 @@ Songs::GENRE Songs::getGenre( std::string directory ) const {
 	return genre;
 }
 
-std::vector< std::vector< char > > Songs::getCode( std::string filename, DIFF diff ) const {
-	std::vector< std::vector< char > > code;
+std::vector< Songs::MEASURE > Songs::getCode( std::string filename, DIFF diff, double bpm ) const {
+	double tmp_bpm = bpm;
+	std::vector< MEASURE > code;
 	std::string tmp_str;
 	std::ifstream ifs( filename );
 	if ( ifs.fail( ) ) {
@@ -282,7 +284,13 @@ std::vector< std::vector< char > > Songs::getCode( std::string filename, DIFF di
 			break;
 		}
 	}
+	bool go_go_time = false;
+	std::string calc_str;
+
 	while ( std::getline( ifs, tmp_str ) ) {
+		MEASURE measure = MEASURE( );
+		measure.bpm = calcString( tmp_bpm, calc_str );
+		measure.go_go_time = go_go_time;
 		if ( !start ) {
 			if ( std::strstr( tmp_str.c_str( ), "#START" ) != NULL ) {
 				start = true;
@@ -292,16 +300,37 @@ std::vector< std::vector< char > > Songs::getCode( std::string filename, DIFF di
 		if ( tmp_str.size( ) == 0 ) {
 			continue;
 		}
+		if ( std::strstr( tmp_str.c_str( ), "#GOGOSTART" ) != NULL ) {
+			go_go_time = true;
+			continue;
+		}
+		if ( std::strstr( tmp_str.c_str( ), "#GOGOEND" ) != NULL ) {
+			go_go_time = false;
+			continue;
+		}
+		if ( std::strstr( tmp_str.c_str( ), "#MEASURE " ) != NULL ) {
+			tmp_str.replace( 0, 9, "" );
+			calc_str = tmp_str;
+			continue;
+		}
+		if ( std::strstr( tmp_str.c_str( ), "#BPMCHANGE " ) != NULL ) {
+			tmp_str.replace( 0, 11, "" );
+			tmp_bpm = std::stod( tmp_str, 0 );
+			continue;
+		}
 		if ( std::strstr( tmp_str.c_str( ), "#END" ) != NULL ) {
 			break;
 		}
 		if ( std::strstr( tmp_str.c_str( ), "#N" ) != NULL ) {
+			//ïÅí ïàñ 
 			through = true;
 		}
 		if ( std::strstr( tmp_str.c_str( ), "#E" ) != NULL ) {
+			//å∫êlïàñ 
 			through = true;
 		}
 		if ( std::strstr( tmp_str.c_str( ), "#M" ) != NULL ) {
+			//íBêlïàñ 
 			through = false;
 		}
 		if ( std::strstr( tmp_str.c_str( ), "#" ) != NULL ) {
@@ -309,19 +338,31 @@ std::vector< std::vector< char > > Songs::getCode( std::string filename, DIFF di
 		}
 		if ( start && !through ) {
 			std::string::const_iterator ite = tmp_str.begin( );
-			std::vector< char > tmp;
 			int size = tmp_str.size( );
 			while ( ite != tmp_str.end( ) ) {
 				char str = (*ite);
 				if ( strstr( (const char*)&str, "," ) ) {
 					break;
 				}
-				tmp.push_back( atoi( (const char*)&str ) );
+				measure.codes.push_back( atoi( (const char*)&str ) );
 				ite++;
 			}
-			code.push_back( tmp );
+			code.push_back( measure );
 		}
 
 	}
 	return code;
 }
+
+double Songs::calcString( double num, std::string str ) const {
+	double result = num;
+	if ( std::strstr( str.c_str( ), "/" ) != NULL ) {
+		int pos = str.find_first_of( "/" );
+		std::string num_str0 = str.substr( 0, pos );
+		std::string num_str1 = str.substr( pos + 1, str.size( ) );
+		double num0 = std::stoi( num_str0, 0 );
+		double num1 = std::stoi( num_str1, 0 );
+		result = num * num0 / num1;
+	}
+	return result;
+};

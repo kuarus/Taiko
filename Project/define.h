@@ -8,6 +8,7 @@ const int WINDOW_HEIGHT = 720;
 const int FONT_SIZE = 32;
 const int SPEED = 5;
 const int JUDGE_X = 220;
+const int MAX_CODE = 192;
 
 enum GRAPH {
 	GRAPH_TITLE,

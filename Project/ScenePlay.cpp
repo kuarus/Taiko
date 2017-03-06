@@ -7,7 +7,6 @@
 
 static const int WAIT_APPEAR_TIME = 40;
 static const int MUSIC_VOL = 80;
-static const int MAX_CODE = 192;
 static const int OFFSET = 1000;
 static const int LOAD_IDX = 1000;
 static const int JUDGE_DRAW_TIME = 12;
@@ -30,10 +29,6 @@ _count( 0 ),
 _judge( Bullet::JUDGE::JUDGE_NONE ),
 _judge_draw( Bullet::JUDGE::JUDGE_NONE ),
 _flash_type( Bullet::TYPE::TYPE_NONE ) {
-	Bullet::CODE code = Bullet::CODE( );
-	code.idx = 100;
-	code.type = Bullet::TYPE::TYPE_YELLOW;
-	_bullets.push_back( BulletPtr( new BulletYellow( code, 100 ) ) );
 	Drawer::changeFont( H_FONT );
 	Songs::SONG_INFO song_info = songs->getInfo( select );
 	std::string music_file = song_info.music;
@@ -43,8 +38,10 @@ _flash_type( Bullet::TYPE::TYPE_NONE ) {
 	loadBullet( songs, select, diff );
 	loadImages( );
 	loadSounds( );
-	if ( _codes.size( ) != 0 ) {
-		_start_code = _codes.at( 0 );
+	if ( _loaded_measures.size( ) != 0 ) {
+		if ( _loaded_measures[ 0 ].size( ) != 0 ) {
+			_start_idx = _loaded_measures[ 0 ].at( 0 ).idx;
+		}
 	}
 }
 
@@ -96,7 +93,7 @@ void ScenePlay::draw( GamePtr game ) {
 	drawSoulGauge( );
 	drawBarLine( );
 	drawFlash( game );
-	drawBullet( );
+	drawMeasure( );
 	drawExplosion( );
 	drawMTaikoFront( game );
 	drawJudge( );
@@ -141,15 +138,17 @@ void ScenePlay::loadSounds( ) {
 }
 
 void ScenePlay::updateStart( GamePtr game ) {
-	int now = _count * 100 / 6 - OFFSET;
-	int seq = (int)(double)( ( now + _song.offset * 1000 ) / _song.pitch );
+	double now = (double)( _count * 100 / 6 - OFFSET ) + _song.offset * 1000;
+	double pitch = 60.0 / _song.measures[ _idx ].bpm * 20.830;
+	int seq = (int)( now / pitch );
 	int mark = _idx * MAX_CODE;
 	_before_seq = seq;
-	updateBullet( seq, game );
-	creatBullet( );
+	updateMeasure( game );
+	updateJudge( );
+	createMeasure( );
 
-	if ( ( seq > (int)( ( _song.offset * 1000 ) / _song.pitch ) ) ||
-		 ( _start_code.idx - OFFSET > (int)( ( _song.offset * 1000 ) / _song.pitch ) ) ) { 
+	if ( ( seq >= (int)( ( _song.offset * 1000 ) / pitch ) ) ||
+		 ( _start_idx - OFFSET >= (int)( ( _song.offset * 1000 ) / pitch ) ) ) { 
 		Sound::playMusic( _music, false );
 		Sound::changeVol( VOL, _music );
 		_play_state = PLAY_STATE::PLAY_STATE_PLAY;
@@ -158,22 +157,42 @@ void ScenePlay::updateStart( GamePtr game ) {
 }
 
 void ScenePlay::updatePlay( GamePtr game ) {
-	int now = Sound::getTime( _music );
-	int seq = (int)(double)( ( now + _song.offset * 1000 ) / _song.pitch );
-	int mark = _idx * MAX_CODE;
-	if ( seq >= mark &&
-		_before_seq < mark ) {
-		_idx++;
-	}
-	_before_seq = seq;
-	updateBullet( seq, game );
+	
+	updateMeasure( game );
 	updateJudge( );
-	creatBullet( );
+	createMeasure( );
 	if ( !Sound::isPlayingMusic( _music ) ) {
 		if ( _result.bad == 0 ) {
 			Sound::playSE( _combo_sound[ COMBO::COMBO_FULL ], false );
 		}
 		_play_state = PLAY_STATE::PLAY_STATE_END;
+	}
+}
+
+void ScenePlay::updateMeasure( GamePtr game ) {
+	int now = (int)( (double)Sound::getTime( _music ) + _song.offset * 1000 );
+	double pitch = 60.0 / _song.measures[ _idx ].bpm * 20.830;
+	int seq = (int)( (double)now / pitch );
+	int mark = _idx * MAX_CODE;
+	if ( seq >= mark &&
+		_before_seq < mark ) {
+		_idx++;
+		int measures_size = _song.measures.size( );
+		if ( _idx > measures_size - 1 ) {
+			_idx = measures_size - 1;
+		}
+	}
+	_before_seq = seq;
+
+	std::vector< ScenePlay::MEASURE >::const_iterator ite = _measurs.begin( );
+	while ( ite != _measurs.end( ) ) {
+		MEASURE measure = *ite;
+		if ( measure.bullets.size( ) == 0 ) {
+			ite = _measurs.erase( ite );
+			continue;
+		}
+		updateBullet( game, measure, now );
+		ite++;
 	}
 }
 
@@ -213,20 +232,19 @@ void ScenePlay::updateJudge( ) {
 	_judge = Bullet::JUDGE::JUDGE_NONE;
 }
 
-void ScenePlay::updateBullet( int idx, GamePtr game ) {
-	std::list< BulletPtr >::const_iterator ite = _bullets.begin( );
+void ScenePlay::updateBullet( GamePtr game, MEASURE measure, int now ) {
+	std::list< BulletPtr >::iterator ite = measure.bullets.begin( );
 	std::list< BulletPtr > hits;
 	BulletPtr through_bullet = BulletPtr( );
-
-	while ( ite != _bullets.end( ) ) {
+	while ( ite != measure.bullets.end( ) ) {
 		BulletPtr bullet = *ite;
 		if ( !bullet ) {
 			ite++;
 			continue;
 		}
-		bullet->update( idx, game );
+		bullet->update( now, game );
 		if ( !bullet->isTurn( ) ) {
-			Bullet::JUDGE judge = bullet->checkJudge( idx, game );
+			Bullet::JUDGE judge = bullet->checkJudge( game );
 			if ( judge != Bullet::JUDGE::JUDGE_NONE ) {
 				if ( judge == Bullet::JUDGE::JUDGE_THROUGH ) {
 					through_bullet = bullet;
@@ -237,7 +255,7 @@ void ScenePlay::updateBullet( int idx, GamePtr game ) {
 			}
 		}
 		if ( bullet->isOutSideScreen( ) ) {
-			ite = _bullets.erase( ite );
+			ite = measure.bullets.erase( ite );
 			continue;
 		}
 		ite++;
@@ -249,17 +267,14 @@ void ScenePlay::updateBullet( int idx, GamePtr game ) {
 		int diff = 100;
 		while ( hits_ite != hits.end( ) ) {
 			BulletPtr bullet = *hits_ite;
-			int tmp = _before_seq - bullet->getIdx( );
-			if ( tmp < 0 ) {
-				tmp *= -1;
-			}
-			if ( tmp < diff ) {
-				diff = tmp;
+			int distance = bullet->getDistanceToJudge( );
+			if ( distance < diff ) {
+				diff = distance;
 				hit = bullet;
 			}
 			hits_ite++;
 		}
-		Bullet::JUDGE judge = hit->checkJudge( idx, game );
+		Bullet::JUDGE judge = hit->checkJudge( game );
 		setJudge( judge );
 		if ( judge != Bullet::JUDGE::JUDGE_BAD &&
 			 judge != Bullet::JUDGE::JUDGE_THROUGH ) {
@@ -268,12 +283,12 @@ void ScenePlay::updateBullet( int idx, GamePtr game ) {
 	}
 	if ( !hit ) {
 		if ( through_bullet ) {
-			ite = _bullets.begin( );
-			while ( ite != _bullets.end( ) ) {
+			ite = measure.bullets.begin( );
+			while ( ite != measure.bullets.end( ) ) {
 				BulletPtr bullet = *ite;
 				if ( bullet == through_bullet ) {
 					setJudge( Bullet::JUDGE::JUDGE_THROUGH );
-					ite = _bullets.erase( ite );
+					ite = measure.bullets.erase( ite );
 					break;
 				}
 				ite++;
@@ -308,9 +323,21 @@ void ScenePlay::drawBarLine( ) const {
 	}
 }
 
-void ScenePlay::drawBullet( ) const {
-	std::list< BulletPtr >::const_iterator ite = _bullets.begin( );
-	while ( ite != _bullets.end( ) ) {
+void ScenePlay::drawMeasure( ) const {
+	std::vector< MEASURE >::const_iterator ite = _measurs.begin( );
+	while ( ite != _measurs.end( ) ) {
+		MEASURE measure = *ite;
+		drawBullet( measure );
+		ite++;
+	}
+}
+
+void ScenePlay::drawBullet( MEASURE measure ) const {
+	std::list< BulletPtr >::const_iterator ite = measure.bullets.begin( );
+	while ( ite != measure.bullets.end( ) ) {
+		if ( !*ite) {
+			continue;
+		}
 		(*ite)->draw( _image[ IMAGE::IMAGE_NOTS ] );
 		ite++;
 	}
@@ -499,23 +526,28 @@ void ScenePlay::drawNote( GamePtr game ) const {
 }
 
 void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
-	int code_list_size = _song.codes.size( );
+	int code_list_size = _song.measures.size( );
 	for ( int i = 0; i < code_list_size; i++ ) {
-		int code_size = _song.codes[ i ].size( );
+		std::vector< Bullet::CODE > codes;
+		int code_size = _song.measures[ i ].codes.size( );
 		int size = 0;
 		if ( code_size != 0 ) {
 			size = MAX_CODE / code_size;
 		}
 		for ( int j = 0; j < code_size; j++ ) {
-			char type = _song.codes[ i ][ j ];
+			char type = _song.measures[ i ].codes[ j ];
 			if ( type > 4 || type == 0 ) {
 				continue;
 			}
 			int idx = ( MAX_CODE * i ) + ( j * size );
 			Bullet::CODE code = Bullet::CODE( );
 			code.idx = idx;
+			code.bpm = _song.measures[ i ].bpm;
 			code.type = (Bullet::TYPE)type;
-			_codes.push_back( code );
+			codes.push_back( code );
+		}
+		if ( codes.size( ) != 0 ) {
+ 			_loaded_measures.push_back( codes );
 		}
 	}
 }
@@ -525,18 +557,32 @@ void ScenePlay::setJudge( Bullet::JUDGE judge ) {
 	_judge_draw = judge;
 	_count = 0;
 }
-void ScenePlay::creatBullet( ) {
-	std::vector< Bullet::CODE >::const_iterator ite = _codes.begin( );
-	while ( ite != _codes.end( ) ) {
-		Bullet::CODE code = *ite;
-		if ( code.idx < _before_seq + LOAD_IDX && code.idx >= 0 ) {
-			BulletPtr bullet = BulletPtr( new Bullet( code ) );
-			_bullets.push_back( bullet );
-			ite = _codes.erase( ite );
+
+void ScenePlay::createMeasure( ) {
+	std::vector< std::vector< Bullet::CODE > >::iterator ite = _loaded_measures.begin( );
+	while ( ite != _loaded_measures.end( ) ) {
+		std::vector< Bullet::CODE > codes = *ite;
+		if ( codes.at( 0 ).idx < _idx * MAX_CODE + LOAD_IDX ) {
+			createBullet( codes );
+			ite = _loaded_measures.erase( ite );
 			continue;
 		}
 		ite++;
 	}
+}
+
+void ScenePlay::createBullet( std::vector< Bullet::CODE > codes ) {
+	MEASURE measure = MEASURE( );
+	std::vector< Bullet::CODE >::iterator ite = codes.begin( );
+	while ( ite != codes.end( ) ) {
+		Bullet::CODE code = *ite;
+		BulletPtr bullet = BulletPtr( new Bullet( code ) );
+		measure.bullets.push_back( bullet );
+		ite = codes.erase( ite );
+		continue;
+		ite++;
+	}
+	_measurs.push_back( measure );
 }
 
 void ScenePlay::playComboSound( ) {

@@ -21,12 +21,18 @@ public:
 		std::string music;
 		std::string filename;
 	};
+	struct MEASURE {
+		double bpm;
+		std::vector< char > codes;
+		bool go_go_time; 
+		MEASURE( ) {
+			this->bpm = 0;
+		}
+	};
 	struct SONG_DATA {
-		double pitch;
 		double offset;
-		std::vector< std::vector< char > > codes;
+		std::vector< MEASURE > measures;
 		SONG_DATA( ) {
-			this->pitch = 0;
 			this->offset = 0;
 		}
 	};
@@ -43,7 +49,8 @@ private:
 	std::vector< std::string > getDirectoryList( ) const;
 	GENRE getGenre( std::string directory ) const;
 	SONG_INFO getInfo( std::string filename, GENRE genre, std::string directory ) const;
-	std::vector< std::vector< char > > getCode( std::string filename, DIFF diff ) const;
+	std::vector< MEASURE> getCode( std::string filename, DIFF diff, double bpm ) const;
+	double calcString( double num, std::string str ) const;
 private:
 	std::vector< SONG_INFO > _song_info_list;
 	std::vector< std::string > _file_list;
