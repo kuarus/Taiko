@@ -12,6 +12,7 @@ public:
 		TYPE_KA,
 		TYPE_BIG_DONG,
 		TYPE_BIG_KA,
+		TYPE_YELLOW,
 		TYPE_REPEATE,
 		MAX_TYPE
 	};
@@ -34,16 +35,21 @@ public:
 		}
 	};
 public:
-	Bullet( CODE code, int num = 0 );
+	Bullet( CODE code );
 	virtual ~Bullet( );
 public:
 	void update( int idx, GamePtr game );
-	void draw( int image ) const;
-	bool isOutSideScreen( ) const;
-	JUDGE checkJudge( int idx, GamePtr game ) const;
+	virtual void draw( int image ) const;
+	virtual bool isOutSideScreen( ) const;
+	virtual JUDGE checkJudge( int idx, GamePtr game ) const;
 	int getIdx( ) const;
-	void setTurn( );
+	virtual void setTurn( );
 	bool isTurn( ) const;
+protected:
+	int getX( ) const;
+	int getY( ) const;
+	int getWidth( ) const;
+	int getHeight( ) const;
 private:
 	struct CHIP_POS {
 		int tx;
@@ -67,7 +73,6 @@ private:
 	int _height;
 	bool _turn;
 	int _count;
-	int _num;
 	CODE _code;
 	CHIP_POS _chip_pos[ MAX_TYPE ];
 };

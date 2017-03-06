@@ -10,8 +10,7 @@ static const int JUDGE_GREAT_RANGE = 3;
 static const int JUDGE_GOOD_RANGE = 9;
 static const int JUDGE_BAD_RANGE = 15;
 
-Bullet::Bullet( CODE code, int num ) {
-	_num = num;
+Bullet::Bullet( CODE code ) {
 	_code = code;
 	_turn = false;
 	_x = 2000;
@@ -85,6 +84,22 @@ void Bullet::setTurn( ) {
 
 bool Bullet::isTurn( ) const {
 	return _turn;
+}
+
+int Bullet::getX( ) const {
+	return _x;
+}
+
+int Bullet::getY( ) const {
+	return _y;
+}
+
+int Bullet::getWidth( ) const {
+	return _width;
+}
+
+int Bullet::getHeight( ) const {
+	return _height;
 }
 
 bool Bullet::checkPush( int idx, GamePtr game ) const {

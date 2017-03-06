@@ -39,7 +39,7 @@ Songs::SONG_DATA Songs::getSongData( int idx, DIFF diff ) const {
 			tmp.replace( 0, 4, "" );
 			double bpm = std::stod( tmp, 0 );
 			double pitch = 60.0 / bpm * 20.0;
-			song_data.pitch;
+			song_data.pitch = pitch;
 			continue;
 		}
 		if ( strstr( tmp.c_str( ), "OFFSET:" ) != NULL ) {

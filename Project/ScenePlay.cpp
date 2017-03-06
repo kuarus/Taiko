@@ -3,6 +3,7 @@
 #include "define.h"
 #include "Songs.h"
 #include "Sound.h"
+#include "BulletYellow.h"
 
 static const int WAIT_APPEAR_TIME = 40;
 static const int MUSIC_VOL = 80;
@@ -29,8 +30,10 @@ _count( 0 ),
 _judge( Bullet::JUDGE::JUDGE_NONE ),
 _judge_draw( Bullet::JUDGE::JUDGE_NONE ),
 _flash_type( Bullet::TYPE::TYPE_NONE ) {
-	
-
+	Bullet::CODE code = Bullet::CODE( );
+	code.idx = 100;
+	code.type = Bullet::TYPE::TYPE_YELLOW;
+	_bullets.push_back( BulletPtr( new BulletYellow( code, 100 ) ) );
 	Drawer::changeFont( H_FONT );
 	Songs::SONG_INFO song_info = songs->getInfo( select );
 	std::string music_file = song_info.music;
