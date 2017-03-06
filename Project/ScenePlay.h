@@ -76,9 +76,10 @@ private:
 	void loadSounds( );
 	void updateStart( GamePtr game );
 	void updatePlay( GamePtr game );
-	void updateMeasure( GamePtr game );
+	void updateMeasure( GamePtr game, int seq );
 	void updateJudge( );
-	void updateBullet( GamePtr game, MEASURE measure, int now );
+	BulletPtr updateBullet( GamePtr game, MEASURE measure, int seq );
+
 	void drawBg( );
 	void drawBarLine( ) const;
 	void drawMeasure( ) const;
@@ -113,6 +114,7 @@ private:
 	int _music;
 	int _before_seq;
 	int _count;
+	int _time;
 	int _flash_count;
 	int _image[ IMAGE::MAX_IMAGE ];
 	int _combo_sound[ COMBO::MAX_COMBO ];

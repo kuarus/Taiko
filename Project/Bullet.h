@@ -27,12 +27,10 @@ public:
 	struct CODE {
 		int idx;
 		int num;
-		double bpm;
 		TYPE type;
 		CODE( ) {
 			this->idx = 0;
 			this->num = 0;
-			this->bpm = 0;
 			this->type = TYPE::TYPE_NONE;
 		}
 	};
@@ -40,7 +38,7 @@ public:
 	Bullet( CODE code );
 	virtual ~Bullet( );
 public:
-	void update( int idx, GamePtr game );
+	void update( int seq, GamePtr game );
 	virtual void draw( int image ) const;
 	virtual bool isOutSideScreen( ) const;
 	virtual JUDGE checkJudge( GamePtr game ) const;
@@ -76,7 +74,7 @@ private:
 	int _height;
 	bool _turn;
 	int _count;
-	int _idx;
+	int _seq_idx;
 	CODE _code;
 	CHIP_POS _chip_pos[ MAX_TYPE ];
 };

@@ -7,7 +7,7 @@ static const int CHIP_SIZE = 64;
 static const int MOVE_SPEED = 35;
 static const int INIT_SPEED_Y = -38;
 static const int JUDGE_GREAT_RANGE = 3;
-static const int JUDGE_GOOD_RANGE = 9;
+static const int JUDGE_GOOD_RANGE = 10;
 static const int JUDGE_BAD_RANGE = 15;
 
 Bullet::Bullet( CODE code ) {
@@ -29,18 +29,17 @@ Bullet::Bullet( CODE code ) {
 Bullet::~Bullet( ) {
 }
 
-void Bullet::update( int now, GamePtr game ) {
-	double pitch = 60.0 / _code.bpm * 20.830;
-	_idx = (int)( (double)now / pitch );
+void Bullet::update( int seq, GamePtr game ) {
+	_seq_idx = seq;
 	if ( !_turn ) {
-		_x = ( _code.idx - _idx ) * SPEED + JUDGE_X;
+		_x = ( _code.idx - _seq_idx ) * SPEED + JUDGE_X;
 	}
 	if ( _turn ) {
 		_x += MOVE_SPEED;
 		_y += _speed;
 		_speed += 3;
 		if ( _x > 1000 ) {
-			_x = - 400;
+			_x = - 1000;
 		}
 	}
 }
@@ -53,8 +52,11 @@ void Bullet::draw( int image ) const {
 
 Bullet::JUDGE Bullet::checkJudge( GamePtr game ) const {
 	Bullet::JUDGE result = JUDGE::JUDGE_NONE;
-	if ( checkPush( _idx, game ) ) {
-		int judge = _code.idx - _idx;
+	if ( _turn ) {
+		return JUDGE::JUDGE_NONE;
+	}
+	if ( checkPush( _seq_idx, game ) ) {
+		int judge = _code.idx - _seq_idx;
 		if ( judge >= - JUDGE_BAD_RANGE && judge <= JUDGE_BAD_RANGE ) {
 			result = JUDGE::JUDGE_BAD;
 		}
@@ -65,7 +67,7 @@ Bullet::JUDGE Bullet::checkJudge( GamePtr game ) const {
 			result = JUDGE::JUDGE_GREAT;
 		}
 	}
-	if ( _code.idx - _idx < -JUDGE_BAD_RANGE ) {
+	if ( _code.idx - _seq_idx < -JUDGE_BAD_RANGE ) {
 		result = JUDGE::JUDGE_THROUGH;
 	}
 	return result;
@@ -88,7 +90,7 @@ bool Bullet::isTurn( ) const {
 }
 
 int Bullet::getDistanceToJudge( ) const {
-	return abs( _code.idx - _idx );
+	return abs( _code.idx - _seq_idx );
 }
 
 int Bullet::getX( ) const {

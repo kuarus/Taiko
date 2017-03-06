@@ -300,56 +300,60 @@ std::vector< Songs::MEASURE > Songs::getCode( std::string filename, DIFF diff, d
 		if ( tmp_str.size( ) == 0 ) {
 			continue;
 		}
-		if ( std::strstr( tmp_str.c_str( ), "#GOGOSTART" ) != NULL ) {
-			go_go_time = true;
-			continue;
-		}
-		if ( std::strstr( tmp_str.c_str( ), "#GOGOEND" ) != NULL ) {
-			go_go_time = false;
-			continue;
-		}
-		if ( std::strstr( tmp_str.c_str( ), "#MEASURE " ) != NULL ) {
-			tmp_str.replace( 0, 9, "" );
-			calc_str = tmp_str;
-			continue;
-		}
-		if ( std::strstr( tmp_str.c_str( ), "#BPMCHANGE " ) != NULL ) {
-			tmp_str.replace( 0, 11, "" );
-			tmp_bpm = std::stod( tmp_str, 0 );
-			continue;
-		}
-		if ( std::strstr( tmp_str.c_str( ), "#END" ) != NULL ) {
-			break;
-		}
-		if ( std::strstr( tmp_str.c_str( ), "#N" ) != NULL ) {
-			//普通譜面
-			through = true;
-		}
-		if ( std::strstr( tmp_str.c_str( ), "#E" ) != NULL ) {
-			//玄人譜面
-			through = true;
-		}
-		if ( std::strstr( tmp_str.c_str( ), "#M" ) != NULL ) {
-			//達人譜面
-			through = false;
-		}
-		if ( std::strstr( tmp_str.c_str( ), "#" ) != NULL ) {
-			continue;
-		}
-		if ( start && !through ) {
-			std::string::const_iterator ite = tmp_str.begin( );
-			int size = tmp_str.size( );
-			while ( ite != tmp_str.end( ) ) {
-				char str = (*ite);
-				if ( strstr( (const char*)&str, "," ) ) {
-					break;
-				}
-				measure.codes.push_back( atoi( (const char*)&str ) );
-				ite++;
+		if ( start ) {
+			if ( std::strstr( tmp_str.c_str( ), "#END" ) != NULL ) {
+				break;
 			}
-			code.push_back( measure );
+			if ( std::strstr( tmp_str.c_str( ), "#GOGOSTART" ) != NULL ) {
+				go_go_time = true;
+				continue;
+			}
+			if ( std::strstr( tmp_str.c_str( ), "#GOGOEND" ) != NULL ) {
+				go_go_time = false;
+				continue;
+			}
+			if ( std::strstr( tmp_str.c_str( ), "#MEASURE " ) != NULL ) {
+				tmp_str.replace( 0, 9, "" );
+				calc_str = tmp_str;
+				continue;
+			}
+			if ( std::strstr( tmp_str.c_str( ), "#BPMCHANGE " ) != NULL ) {
+				tmp_str.replace( 0, 11, "" );
+				tmp_bpm = std::stod( tmp_str, 0 );
+				continue;
+			}
+			if ( std::strstr( tmp_str.c_str( ), "#N" ) != NULL ) {
+				//普通譜面
+				through = true;
+				continue;
+			}
+			if ( std::strstr( tmp_str.c_str( ), "#E" ) != NULL ) {
+				//玄人譜面
+				through = true;
+				continue;
+			}
+			if ( std::strstr( tmp_str.c_str( ), "#M" ) != NULL ) {
+				//達人譜面
+				through = false;
+				continue;
+			}
+			if ( std::strstr( tmp_str.c_str( ), "#" ) != NULL ) {
+				continue;
+			}
+			if ( !through ) {
+				std::string::const_iterator ite = tmp_str.begin( );
+				int size = tmp_str.size( );
+				while ( ite != tmp_str.end( ) ) {
+					char str = (*ite);
+					if ( strstr( (const char*)&str, "," ) ) {
+						break;
+					}
+					measure.codes.push_back( atoi( (const char*)&str ) );
+					ite++;
+				}
+				code.push_back( measure );
+			}
 		}
-
 	}
 	return code;
 }
@@ -362,7 +366,10 @@ double Songs::calcString( double num, std::string str ) const {
 		std::string num_str1 = str.substr( pos + 1, str.size( ) );
 		double num0 = std::stoi( num_str0, 0 );
 		double num1 = std::stoi( num_str1, 0 );
-		result = num * num0 / num1;
+		if ( num0 == num1 ) {
+			return result;
+		}
+	result = ( num * num1 ) / num0;
 	}
 	return result;
 };
