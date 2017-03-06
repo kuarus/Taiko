@@ -30,9 +30,16 @@ Songs::SONG_DATA Songs::getSongData( int idx, DIFF diff ) const {
 	}
 
 	while ( getline( ifs, tmp ) ) {
-		if ( strstr( tmp.c_str( ), "PITCH:" ) != NULL ) {
-			tmp.replace( 0, 6, "" );
-			song_data.pitch = std::stod( tmp, 0 );
+		//if ( strstr( tmp.c_str( ), "PITCH:" ) != NULL ) {
+		//	tmp.replace( 0, 6, "" );
+		//	song_data.pitch = std::stod( tmp, 0 );
+		//	continue;
+		//}
+		if ( strstr( tmp.c_str( ), "BPM:" ) != NULL ) {
+			tmp.replace( 0, 4, "" );
+			double bpm = std::stod( tmp, 0 );
+			double pitch = 60.0 / bpm * 20.0;
+			song_data.pitch;
 			continue;
 		}
 		if ( strstr( tmp.c_str( ), "OFFSET:" ) != NULL ) {

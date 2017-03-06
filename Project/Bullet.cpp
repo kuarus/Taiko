@@ -6,10 +6,9 @@ static const int POSITION_Y = 200;
 static const int CHIP_SIZE = 64;
 static const int MOVE_SPEED = 35;
 static const int INIT_SPEED_Y = -38;
-static const int JUDGE_GREAT_RANGE = 4;
+static const int JUDGE_GREAT_RANGE = 3;
 static const int JUDGE_GOOD_RANGE = 9;
 static const int JUDGE_BAD_RANGE = 15;
-static const int JUDGE_THROUGH_RANGE = 16;
 
 Bullet::Bullet( CODE code, int num ) {
 	_num = num;
@@ -66,7 +65,7 @@ Bullet::JUDGE Bullet::checkJudge( int idx, GamePtr game ) const {
 			result = JUDGE::JUDGE_GREAT;
 		}
 	}
-	if ( _code.idx - idx < -10 ) {
+	if ( _code.idx - idx < -JUDGE_BAD_RANGE ) {
 		result = JUDGE::JUDGE_THROUGH;
 	}
 	return result;
