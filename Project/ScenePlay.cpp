@@ -16,6 +16,8 @@ static const int GREAT_SCORE = 200;
 static const int GOOD_SCORE = 300;
 static const int VOL = 255;//MAX255
 static const int MAX_GAUGE = 36;
+//bpmåvéZ pitch = 60/bpm*21
+
 
 ScenePlay::ScenePlay( int select, SongsPtr songs, Songs::DIFF diff ) :
 _mood( MOOD::MOOD_NORMAL ),
