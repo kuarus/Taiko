@@ -15,8 +15,7 @@ Game::Game( ) :
 _scene( SCENE::SCENE_TITLE ),
 _old_scene( _scene ),
 _selecting_song( 0 ),
-_is_finish( false ){
-
+_is_finish( false ) {
 	ChangeWindowMode( TRUE );
 	SetGraphMode( WINDOW_WIDTH, WINDOW_HEIGHT, 16 );
 	SetAlwaysRunFlag( TRUE );
@@ -32,12 +31,17 @@ _is_finish( false ){
 	for ( int i = 0; i < GRAPH_MAX; i++ ) {
 		_images[ i ] = 0;
 	}
+
 	_se[ SE::SE_DONG ] = Sound::load( "Resource/Sound/dong.wav" );
 	_se[ SE::SE_KA   ] = Sound::load( "Resource/Sound/ka.wav" );
 
 	_songs = SongsPtr( new Songs );
 	_scene_ptr = ScenePtr( new SceneTitle( ) );
 	SetCreateSoundDataType( DX_SOUNDDATATYPE_FILE );
+	for ( int i = 0; i < 256; i++ ) {
+		_key[ i ] = 0;
+		_device[ i ] = 0;
+	}
 }
 
 Game::~Game( ) {
@@ -69,11 +73,29 @@ void Game::setKey( SE se ) {
 }
 
 bool Game::isPushKey( int key ) const {
-	return _key[ key ] == 1;
+	bool result = false;
+	if ( ( _key[ key ] == 1 ) ||
+		 ( _device[ key ] == 1 ) ) {
+		result = true;
+	}
+	return result;
 }
 
 bool Game::isHoldKey( int key ) const {
-	return _key[ key ] > 1;
+	bool result = false;
+	if ( ( _key[ key ] >= 1 ) ||
+		 ( _device[ key ] >= 1 ) ) {
+		result = true;
+	}
+	return result;
+}
+
+bool Game::isPushDevice( int key ) const {
+	return _device[ key ] == 1;
+}
+
+bool Game::isHoldDevice( int key ) const {
+	return _device[ key ] > 1;
 }
 
 bool Game::isNext( ) const {
@@ -128,6 +150,16 @@ bool Game::isKaLeft( ) const {
 	if ( _automatic[ SE::SE_KA ] ) {
 		push = true;
 	}
+	int pad = GetJoypadInputState( DX_INPUT_PAD1 );
+	if ( pad & PAD_INPUT_UP ) {
+		push = true;
+	}
+	if ( pad & PAD_INPUT_7 ) {
+		push = true;
+	}
+	if ( pad & PAD_INPUT_5 ) {
+		push = true;
+	}
 	return push;
 }
 
@@ -137,6 +169,17 @@ bool Game::isKaRight( ) const {
 		push = true;
 	}
 	if ( isPushKey( KEY::KEY_RIGHT ) ) {
+		push = true;
+	}
+	
+	int pad = GetJoypadInputState( DX_INPUT_PAD1 );
+	if ( pad & PAD_INPUT_2 ) {
+		push = true;
+	}
+	if ( pad & PAD_INPUT_9 ) {
+		push = true;
+	}
+	if ( pad & PAD_INPUT_8 ) {
 		push = true;
 	}
 	return push;
@@ -176,6 +219,7 @@ bool Game::isFinish( ) {
 
 void Game::update( ) {
 	updateKey( );
+	//updateDevice( );
 	updateSe( );
 	changeAutomatic( );
 	if ( _scene_ptr ) {
@@ -223,11 +267,80 @@ void Game::changeScene( SCENE scene ) {
 void Game::updateKey( ) {
 	char key[ 256 ];
 	GetHitKeyStateAll( key );
+
 	for ( int i = 0; i < 256; i++ ) {
 		if ( key[ i ] == 0 ) {
 			_key[ i ] = 0;
 		}
 		_key[ i ] += key[ i ];
+	}
+}
+
+void Game::updateDevice( ) {
+	int pad = GetJoypadInputState( DX_INPUT_PAD1 );
+	if ( _scene != SCENE::SCENE_PLAY ) { 
+		if ( pad & PAD_INPUT_LEFT ) {
+			//左
+			_device[ KEY::KEY_D ]++; 
+		} else {
+			_device[ KEY::KEY_D ] = 0;
+		}
+		if ( pad & PAD_INPUT_RIGHT ) {
+			//右
+			_device[ KEY::KEY_K ]++; 
+		} else {
+			_device[ KEY::KEY_K ] = 0;
+		}
+		if ( pad & PAD_INPUT_4 ) {
+			//選択
+			_device[ KEY::KEY_SPACE ]++; 
+		} else {
+			_device[ KEY::KEY_SPACE ] = 0;
+		}
+		if ( pad & PAD_INPUT_3 ) {
+			//選択
+			_device[ KEY::KEY_ESCAPE ]++; 
+		} else {
+			_device[ KEY::KEY_ESCAPE ] = 0;
+		}
+	}
+	if ( _scene == SCENE::SCENE_PLAY ) {
+		_device[ KEY::KEY_SPACE ] = 0;
+		if ( ( pad & PAD_INPUT_1 ) &&
+			 ( pad & PAD_INPUT_3 ) ) {
+			//右ドン
+			_device[ KEY::KEY_J ]++; 
+		} else {
+			_device[ KEY::KEY_J ] = 0;
+		}
+		if ( ( pad & PAD_INPUT_LEFT ) &&
+			 ( pad & PAD_INPUT_RIGHT ) ) {
+			//左ドン
+			_device[ KEY::KEY_D ]++; 
+		} else {
+			_device[ KEY::KEY_D ] = 0;
+		}
+		if ( ( pad & PAD_INPUT_5 ) &&
+			 ( pad & PAD_INPUT_UP ) ) {
+			//左カッ
+			_device[ KEY::KEY_D ]++; 
+		} else {
+			_device[ KEY::KEY_D ] = 0;
+		}
+		if ( ( pad & PAD_INPUT_2 ) ||
+			 ( pad & PAD_INPUT_6 ) ) {
+			//右かっ
+			_device[ KEY::KEY_K ]++; 
+		} else {
+			_device[ KEY::KEY_K ] = 0;
+		}
+
+		if ( pad & PAD_INPUT_12 ) {
+			//戻る
+			_device[ KEY::KEY_ESCAPE ]++; 
+		} else {
+			_device[ KEY::KEY_ESCAPE ] = 0;
+		}
 	}
 }
 

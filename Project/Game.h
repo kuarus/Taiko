@@ -71,6 +71,8 @@ public:
 	void setKey( SE se );
 	bool isPushKey( int key ) const;
 	bool isHoldKey( int key ) const;
+	bool isPushDevice( int key ) const;
+	bool isHoldDevice( int key ) const;
 	bool isNext( ) const;
 	bool isBack( ) const;
 	bool isDongLeft( ) const;
@@ -86,6 +88,7 @@ private:
 	GamePtr getThis( );
 	void changeScene( SCENE scene );
 	void updateKey( );
+	void updateDevice( );
 	void updateSe( );
 private:
 	SCENE _scene;
@@ -101,4 +104,5 @@ private:
 	bool _auto;
 	bool _automatic[ SE::MAX_SE ];
 	char _key[ 256 ];
+	char _device[ 256 ];
 };

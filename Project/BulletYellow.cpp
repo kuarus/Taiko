@@ -41,5 +41,5 @@ void BulletYellow::setTurn( ) {
 
 bool BulletYellow::isOutSideScreen( ) const {
 	Bullet::CODE code = getCode( );
-	return ( getIdx( ) - code.num * SPEED ) < -1000;
+	return ( code.idx - code.num * SPEED ) < -2000;
 }

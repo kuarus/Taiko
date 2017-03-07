@@ -577,7 +577,7 @@ void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
 			if ( type == 0 ) {
 				continue;
 			}
-			if ( type > 9 ) {
+			if ( type >= 9 ) {
 				continue;
 			}
 			if ( !existence ) {
@@ -626,6 +626,9 @@ void ScenePlay::createBullet( std::vector< Bullet::CODE > codes ) {
 		BulletPtr bullet = BulletPtr( );
 		switch ( code.type ) {
 		case Bullet::TYPE::TYPE_YELLOW:
+			bullet = BulletPtr( new BulletYellow( code ) );
+			break;
+		case Bullet::TYPE::TYPE_YELLOW_BIG:
 			bullet = BulletPtr( new BulletYellow( code ) );
 			break;
 		case Bullet::TYPE::TYPE_BALOON:
