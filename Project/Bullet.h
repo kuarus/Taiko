@@ -46,6 +46,7 @@ public:
 	virtual void setTurn( );
 	bool isTurn( ) const;
 	int getDistanceToJudge( ) const;
+	bool isFinished( ) const;
 protected:
 	int getX( ) const;
 	int getY( ) const;

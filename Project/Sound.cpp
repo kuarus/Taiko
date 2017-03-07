@@ -23,10 +23,15 @@ void Sound::playSE( int handle, bool loop ) {
 
 void Sound::playMusic( int handle, bool loop, int position ) {
 	int dx_type = DX_PLAYTYPE_BACK;
+	int top = TRUE;
 	if ( loop ) {
 		dx_type = DX_PLAYTYPE_LOOP;
+		if ( position != 0 ) {
+			top = FALSE;
+			SetSoundCurrentTime( position, handle );
+		}
 	}
-	PlayStreamSoundMem( handle, dx_type, position );
+	PlaySoundMem( handle, dx_type, top );
 }
 
 bool Sound::isPlayingMusic( int handle ) {

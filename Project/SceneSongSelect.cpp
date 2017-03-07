@@ -43,8 +43,10 @@ void SceneSongSelect::update( GamePtr game ) {
 		break;
 	case STATE::STATE_SELECT_DIFF:
 		if ( game->isNext( ) ) {
-			game->setSelectSong( _select, _selecting_diff );
-			game->setScene( Game::SCENE::SCENE_PLAY );
+			if ( _songs->getLevel( _select, _selecting_diff ) != 0 ) {
+				game->setSelectSong( _select, _selecting_diff );
+				game->setScene( Game::SCENE::SCENE_PLAY );
+			}
 		}
 		if ( game->isBack( ) ) {
 			_state = STATE::STATE_SELECT_SONG;
@@ -115,7 +117,6 @@ void SceneSongSelect::drawSongList( ) {
 	int sx2 = sx1 + menu_width;
 	int sy1 = MENU_Y;
 	int sy2 = sy1 + MENU_HEIGHT;
-	//int menu_color = Drawer::getColor( 50, 255, 50 );
 	drawSelecting( );
 
 	for ( int i = 0; i < VIEW_NUM; i++ ) {
@@ -177,6 +178,6 @@ void SceneSongSelect::select( GamePtr game ) {
 void SceneSongSelect::audition( ) {
 	Sound::stop( _music );
 	_music = Sound::load( _song_list[ _select ].music.c_str( ) );
-	Sound::playMusic( _music, true );
-	Sound::changeVol( 210, _music );
+	Sound::playMusic( _music, true, _song_list[ _select ].demo_pos );
+	Sound::changeVol( 240, _music );
 }

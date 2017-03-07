@@ -30,16 +30,9 @@ Songs::SONG_DATA Songs::getSongData( int idx, DIFF diff ) const {
 	}
 
 	while ( getline( ifs, tmp ) ) {
-		//if ( strstr( tmp.c_str( ), "PITCH:" ) != NULL ) {
-		//	tmp.replace( 0, 6, "" );
-		//	song_data.pitch = std::stod( tmp, 0 );
-		//	continue;
-		//}
 		if ( strstr( tmp.c_str( ), "BPM:" ) != NULL ) {
 			tmp.replace( 0, 4, "" );
 			bpm = std::stod( tmp, 0 );
-			//double pitch = 60.0 / bpm * 20.830;
-			//song_data.pitch = pitch;
 			continue;
 		}
 		if ( strstr( tmp.c_str( ), "OFFSET:" ) != NULL ) {
@@ -115,17 +108,14 @@ int Songs::getLevel( int idx, DIFF diff ) const {
 				break;
 			}
 		}
-		//level = std::atoi( level_str.c_str( ) );
 	}
-	//if ( diff == DIFF::ONI ) {
-		while ( getline( ifs, level_str ) ) {
-			if ( strstr( level_str.c_str( ), "LEVEL:" ) != NULL ) {
-				level_str.replace( 0, 6, "" );
-				level = std::atoi( level_str.c_str( ) );
-				break;
-			}
+	while ( getline( ifs, level_str ) ) {
+		if ( strstr( level_str.c_str( ), "LEVEL:" ) != NULL ) {
+			level_str.replace( 0, 6, "" );
+			level = std::atoi( level_str.c_str( ) );
+			break;
 		}
-	//}
+	}
 	return level;
 }
 
@@ -183,8 +173,17 @@ Songs::SONG_INFO Songs::getInfo( std::string filename, Songs::GENRE genre, std::
 			song_info.music = directory + tmp;
 			continue;
 		}
+		if ( strstr( tmp.c_str( ), "DEMOSTART:" ) != NULL ) {
+			tmp.replace( 0, 10, "" );
+			if ( tmp.size( ) != 0 ) {
+				double d_demo = std::stoi( tmp, 0 );
+				song_info.demo_pos = (int)( d_demo * 1000 + 0.5 );
+			}
+			continue;
+		}
 		if ( song_info.title.size( ) != 0 &&
-			 song_info.music.size( ) != 0 ) {
+			 song_info.music.size( ) != 0 &&
+			 song_info.demo_pos != 0 ) {
 			break;
 		}
 	}
@@ -285,11 +284,12 @@ std::vector< Songs::MEASURE > Songs::getCode( std::string filename, DIFF diff, d
 		}
 	}
 	bool go_go_time = false;
-	std::string calc_str;
+	std::string measure_str;
 
 	while ( std::getline( ifs, tmp_str ) ) {
 		MEASURE measure = MEASURE( );
-		measure.bpm = calcString( tmp_bpm, calc_str );
+		measure.bpm = tmp_bpm;
+		measure.measure = calcString( 4.0, measure_str );
 		measure.go_go_time = go_go_time;
 		if ( !start ) {
 			if ( std::strstr( tmp_str.c_str( ), "#START" ) != NULL ) {
@@ -314,7 +314,7 @@ std::vector< Songs::MEASURE > Songs::getCode( std::string filename, DIFF diff, d
 			}
 			if ( std::strstr( tmp_str.c_str( ), "#MEASURE " ) != NULL ) {
 				tmp_str.replace( 0, 9, "" );
-				calc_str = tmp_str;
+				measure_str = tmp_str;
 				continue;
 			}
 			if ( std::strstr( tmp_str.c_str( ), "#BPMCHANGE " ) != NULL ) {
@@ -369,7 +369,7 @@ double Songs::calcString( double num, std::string str ) const {
 		if ( num0 == num1 ) {
 			return result;
 		}
-	result = ( num * num1 ) / num0;
+	result = ( num * num0 ) / num1;
 	}
 	return result;
 };

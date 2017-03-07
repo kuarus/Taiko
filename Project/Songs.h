@@ -20,13 +20,20 @@ public:
 		std::string title;
 		std::string music;
 		std::string filename;
+		int demo_pos;
+		SONG_INFO( ) {
+			this->demo_pos = 0;
+		}
 	};
 	struct MEASURE {
 		double bpm;
+		double measure;
 		std::vector< char > codes;
 		bool go_go_time; 
 		MEASURE( ) {
 			this->bpm = 0;
+			this->measure = 0;
+			this->go_go_time = false;
 		}
 	};
 	struct SONG_DATA {

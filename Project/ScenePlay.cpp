@@ -5,19 +5,19 @@
 #include "Sound.h"
 #include "BulletYellow.h"
 
+
 static const int WAIT_APPEAR_TIME = 40;
-static const int MUSIC_VOL = 80;
 static const int OFFSET = 1000;
-static const int LOAD_IDX = 1000;
-static const int JUDGE_DRAW_TIME = 12;
-static const int EXPLOSION_DRAW_TIME = 9;
-static const int FLASH_DRAW_TIME = 5;
-static const int GREAT_SCORE = 200;
-static const int GOOD_SCORE = 300;
+static const int LOAD_IDX = 600;
 static const int VOL = 255;//MAX255
 static const int MAX_GAUGE = 36;
-static const double BPM_RATIO = 20.71777;
-//bpmåvéZ pitch = 60/bpm*21
+//score
+static const int GREAT_SCORE = 200;
+static const int GOOD_SCORE = 300;
+//draw
+static const int FLASH_DRAW_TIME = 5;
+static const int JUDGE_DRAW_TIME = 12;
+static const int EXPLOSION_DRAW_TIME = 9;
 
 ScenePlay::ScenePlay( int select, SongsPtr songs, Songs::DIFF diff ) :
 _mood( MOOD::MOOD_NORMAL ),
@@ -62,6 +62,9 @@ ScenePlay::~ScenePlay( ) {
 void ScenePlay::update( GamePtr game ) {
 	switch( _play_state ) {
 	case PLAY_STATE::PLAY_STATE_WAIT:
+		if ( _song.measures.size( ) == 0 ) {
+			game->setScene( Game::SCENE::SCENE_SONG_SELECT );
+		}
 		if ( game->isPushKey( Game::KEY::KEY_SPACE ) ) {
 			_play_state = PLAY_STATE::PLAY_STATE_START;
 		}
@@ -139,9 +142,9 @@ void ScenePlay::loadSounds( ) {
 }
 
 void ScenePlay::updateStart( GamePtr game ) {
-	double now = (double)( _count * 100 / 6 - OFFSET ) + _song.offset * 1000;
-	double pitch = 60.0 * BPM_RATIO / _song.measures[ _idx ].bpm;
-	int seq = (int)( (double)now / pitch );
+	int now = (int)( (double)( _count * 100 / 6 - OFFSET ) + _song.offset * 1000 + 0.5 );
+	double pitch = convertMsToPitch( _idx );
+	int seq = (int)( (double)now / pitch + 0.5 );
 	int mark = _idx * MAX_CODE;
 	_before_seq = seq;
 	updateMeasure( game, seq );
@@ -159,8 +162,8 @@ void ScenePlay::updateStart( GamePtr game ) {
 
 void ScenePlay::updatePlay( GamePtr game ) {
 	int mark = _idx * MAX_CODE;
-	int now = (int)( (double)Sound::getTime( _music ) + _song.offset * 1000 ) - _time;
-	double pitch = 60.0 * BPM_RATIO / _song.measures[ _idx - 1 ].bpm;
+	int now = (int)( (double)Sound::getTime( _music ) + _song.offset * 1000 - _time + 0.5 );
+	double pitch = convertMsToPitch( _idx - 1 );
 	int seq = (int)( (double)now / pitch + 0.5 ) + mark - MAX_CODE;
 	if ( seq >= mark &&
 		_before_seq < mark ) {
@@ -169,7 +172,7 @@ void ScenePlay::updatePlay( GamePtr game ) {
 		if ( _idx > measures_size ) {
 			_idx = measures_size;
 		}
-		_time += now;
+		_time += (int)( pitch * MAX_CODE + 0.5 );
 	}
 	_before_seq = seq;
 
@@ -651,4 +654,14 @@ void ScenePlay::addScore( ) {
 		_result.score += (int)( (double)( GOOD_SCORE  * ( _result.combo + 10 ) / 10 ) ) / 10;
 		break;
 	}
+}
+
+double ScenePlay::convertMsToPitch( int idx ) {
+	//msÅ®bpm
+	//bpm = 60 / ms * measure
+	//
+	//bpmÅ®ms
+	//ms = 60 / bpm * measure
+	double pitch = 60.0 / _song.measures[ idx ].bpm * _song.measures[ idx ].measure * 1000 / MAX_CODE;
+	return pitch;
 }

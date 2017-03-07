@@ -100,6 +100,7 @@ private:
 	void createBullet( std::vector< Bullet::CODE > codes );
 	void playComboSound( );
 	void addScore( );
+	double convertMsToPitch( int idx );
 private:
 	MOOD _mood;
 	PLAY_STATE _play_state;

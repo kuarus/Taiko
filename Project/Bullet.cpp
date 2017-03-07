@@ -93,6 +93,16 @@ int Bullet::getDistanceToJudge( ) const {
 	return abs( _code.idx - _seq_idx );
 }
 
+bool Bullet::isFinished( ) const {
+	bool result = false;
+	if ( _turn ) {
+		if ( _x > 1000 ) {
+			result = true;
+		}
+	}
+	return result;
+}
+
 int Bullet::getX( ) const {
 	return _x;
 }
