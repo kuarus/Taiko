@@ -13,6 +13,8 @@ public:
 		TYPE_BIG_DONG,
 		TYPE_BIG_KA,
 		TYPE_YELLOW,
+		TYPE_YELLOW_BIG,
+		TYPE_BALOON,
 		TYPE_REPEATE,
 		MAX_TYPE
 	};
@@ -38,20 +40,23 @@ public:
 	Bullet( CODE code );
 	virtual ~Bullet( );
 public:
-	void update( int seq, GamePtr game );
-	virtual void draw( int image ) const;
+	virtual void update( int seq, GamePtr game );
+	virtual void draw( int* image ) const;
 	virtual bool isOutSideScreen( ) const;
 	virtual JUDGE checkJudge( GamePtr game ) const;
 	int getIdx( ) const;
 	virtual void setTurn( );
 	bool isTurn( ) const;
 	int getDistanceToJudge( ) const;
+	void setFinished( );
 	bool isFinished( ) const;
 protected:
 	int getX( ) const;
 	int getY( ) const;
 	int getWidth( ) const;
 	int getHeight( ) const;
+	CODE getCode( ) const;
+	void setX( int x );
 private:
 	struct CHIP_POS {
 		int tx;
@@ -74,6 +79,7 @@ private:
 	int _width;
 	int _height;
 	bool _turn;
+	bool _finish;
 	int _count;
 	int _seq_idx;
 	CODE _code;

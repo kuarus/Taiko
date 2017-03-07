@@ -38,9 +38,11 @@ public:
 	};
 	struct SONG_DATA {
 		double offset;
+		double bpm;
 		std::vector< MEASURE > measures;
 		SONG_DATA( ) {
 			this->offset = 0;
+			this->bpm = 0;
 		}
 	};
 public:

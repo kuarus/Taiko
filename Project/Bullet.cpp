@@ -12,7 +12,9 @@ static const int JUDGE_BAD_RANGE = 15;
 
 Bullet::Bullet( CODE code ) {
 	_code = code;
+	_code.num /= 2;
 	_turn = false;
+	_finish = false;
 	_x = 2000;
 	_count = 0;
 	_y = POSITION_Y;
@@ -39,15 +41,15 @@ void Bullet::update( int seq, GamePtr game ) {
 		_y += _speed;
 		_speed += 3;
 		if ( _x > 1000 ) {
-			_x = - 1000;
+			_finish = true;
 		}
 	}
 }
 
-void Bullet::draw( int image ) const {
+void Bullet::draw( int* image ) const {
 	int tx = _chip_pos[ _code.type ].tx;
 	int ty = _chip_pos[ _code.type ].ty;
-	Drawer::drawGraph( tx, ty, _x - _width / 2, _y, _x + _width - _width / 2, _y + _height, CHIP_SIZE, CHIP_SIZE, image );
+	Drawer::drawGraph( tx, ty, _x - _width / 2, _y, _x + _width - _width / 2, _y + _height, CHIP_SIZE, CHIP_SIZE, *image );
 }
 
 Bullet::JUDGE Bullet::checkJudge( GamePtr game ) const {
@@ -93,14 +95,12 @@ int Bullet::getDistanceToJudge( ) const {
 	return abs( _code.idx - _seq_idx );
 }
 
+void Bullet::setFinished( ) {
+	_finish = true;
+}
+
 bool Bullet::isFinished( ) const {
-	bool result = false;
-	if ( _turn ) {
-		if ( _x > 1000 ) {
-			result = true;
-		}
-	}
-	return result;
+	return _finish;
 }
 
 int Bullet::getX( ) const {
@@ -117,6 +117,14 @@ int Bullet::getWidth( ) const {
 
 int Bullet::getHeight( ) const {
 	return _height;
+}
+
+Bullet::CODE Bullet::getCode( ) const {
+	return _code;
+}
+
+void Bullet::setX( int x ) {
+	_x = x;
 }
 
 bool Bullet::checkPush( int idx, GamePtr game ) const {

@@ -24,7 +24,6 @@ Songs::SONG_DATA Songs::getSongData( int idx, DIFF diff ) const {
 	std::string filename = _song_info_list[ idx ].filename;
 	std::string tmp;
 	std::ifstream ifs( filename );
-	double bpm = 0;
 	if ( ifs.fail( ) ) {
 		return song_data;
 	}
@@ -32,7 +31,7 @@ Songs::SONG_DATA Songs::getSongData( int idx, DIFF diff ) const {
 	while ( getline( ifs, tmp ) ) {
 		if ( strstr( tmp.c_str( ), "BPM:" ) != NULL ) {
 			tmp.replace( 0, 4, "" );
-			bpm = std::stod( tmp, 0 );
+			song_data.bpm = std::stod( tmp, 0 );
 			continue;
 		}
 		if ( strstr( tmp.c_str( ), "OFFSET:" ) != NULL ) {
@@ -51,14 +50,14 @@ Songs::SONG_DATA Songs::getSongData( int idx, DIFF diff ) const {
 		}
 
 		if ( song_data.offset != 0 &&
-			 bpm != 0 ) {
+			 song_data.bpm != 0 ) {
 			break;
 		}
 	}
-	song_data.measures = getCode( filename, diff, bpm );
+	song_data.measures = getCode( filename, diff, song_data.bpm );
 
-	if ( bpm == 0 ) {
-		bpm = 8;
+	if ( song_data.bpm == 0 ) {
+		song_data.bpm = 100.0;
 	}
 
 	return song_data;

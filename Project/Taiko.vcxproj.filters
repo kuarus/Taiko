@@ -54,6 +54,9 @@
     <ClCompile Include="BulletYellow.cpp">
       <Filter>Taiko</Filter>
     </ClCompile>
+    <ClCompile Include="BulletBaloon.cpp">
+      <Filter>Taiko</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scene.h">
@@ -99,6 +102,9 @@
       <Filter>Scene</Filter>
     </ClInclude>
     <ClInclude Include="BulletYellow.h">
+      <Filter>Taiko</Filter>
+    </ClInclude>
+    <ClInclude Include="BulletBaloon.h">
       <Filter>Taiko</Filter>
     </ClInclude>
   </ItemGroup>

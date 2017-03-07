@@ -78,7 +78,7 @@ private:
 	void updatePlay( GamePtr game );
 	void updateMeasure( GamePtr game, int seq );
 	void updateJudge( );
-	BulletPtr updateBullet( GamePtr game, MEASURE measure, int seq );
+	BulletPtr updateBullet( GamePtr game, MEASURE* measure, int seq );
 
 	void drawBg( );
 	void drawBarLine( ) const;
