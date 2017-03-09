@@ -6,6 +6,7 @@
 
 PTR( Songs );
 PTR( Bullet );
+PTR( AnimationBullet );
 
 class ScenePlay : public Scene {
 public:
@@ -92,6 +93,7 @@ private:
 	void drawFlash( GamePtr game );
 	void drawCombo( int combo ) const;
 	void drawScore( int score ) const;
+	void drawAnimationBullet( );
 	void drawSoulGauge( ) const;
 	void drawNote( GamePtr game ) const;
 	void loadBullet( SongsPtr songs, int select, Songs::DIFF diff );
@@ -100,6 +102,7 @@ private:
 	void createBullet( std::vector< Bullet::CODE > codes );
 	void playComboSound( );
 	void addScore( );
+	void addAnimation( Bullet::TYPE type );
 	double convertMsToPitch( int idx );
 private:
 	MOOD _mood;
@@ -122,5 +125,6 @@ private:
 	std::string _title;
 	std::vector< MEASURE > _measurs;
 	std::vector< std::vector< Bullet::CODE > > _loaded_measures;
+	std::list< AnimationBulletPtr > _animations;
 };
 

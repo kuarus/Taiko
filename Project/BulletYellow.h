@@ -6,9 +6,12 @@ public:
 	BulletYellow( CODE code );
 	virtual ~BulletYellow( );
 public:
+	void update( int seq, GamePtr game );
 	void draw( int* image ) const;
-	JUDGE checkJudge( int idx, GamePtr game ) const;
+	JUDGE checkJudge( GamePtr game ) const;
 	void setTurn( );
 	bool isOutSideScreen( ) const;
+private:
+	bool checkPush( int idx, GamePtr game ) const;
 };
 

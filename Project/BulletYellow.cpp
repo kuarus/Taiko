@@ -11,6 +11,14 @@ Bullet( code ) {
 BulletYellow::~BulletYellow( ) {
 }
 
+void BulletYellow::update( int seq, GamePtr game ) {
+	setSeqIdx( seq );
+	CODE code = getCode( );
+	int x = getX( );
+	int y = getY( );
+	x = (int)( (double)( code.idx - seq ) * SPEED * code.speed + JUDGE_X );
+	setX( x );
+}
 
 void BulletYellow::draw( int* image ) const {
 	Bullet::CODE code = getCode( );
@@ -32,7 +40,7 @@ void BulletYellow::draw( int* image ) const {
 	Drawer::drawGraph( 7, 0, x1, y1, x2, y2, CHIP_SIZE, CHIP_SIZE, *image );
 }
 
-Bullet::JUDGE BulletYellow::checkJudge( int idx, GamePtr game ) const {
+Bullet::JUDGE BulletYellow::checkJudge( GamePtr game ) const {
 	return Bullet::JUDGE::JUDGE_NONE;
 }
 
@@ -41,5 +49,9 @@ void BulletYellow::setTurn( ) {
 
 bool BulletYellow::isOutSideScreen( ) const {
 	Bullet::CODE code = getCode( );
-	return ( code.idx - code.num * SPEED ) < -2000;
+	return ( code.idx + code.num * SPEED / 2 + getWidth( ) ) < 0;
+}
+
+bool BulletYellow::checkPush( int idx, GamePtr game ) const {
+	return false;
 }

@@ -20,10 +20,12 @@ private:
 	void drawSongList( );
 	void select( GamePtr game );
 	void audition( );
+	void setLevel( );
 private:
 	int _bg_image;
 	int _select;
 	int _music;
+	int _level[ Songs::DIFF::MAX_DIFF ];
 	STATE _state;
 	Songs::DIFF _selecting_diff;
 	SongsPtr _songs;

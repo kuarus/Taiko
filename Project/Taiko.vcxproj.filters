@@ -57,6 +57,12 @@
     <ClCompile Include="BulletBaloon.cpp">
       <Filter>Taiko</Filter>
     </ClCompile>
+    <ClCompile Include="BulletNormal.cpp">
+      <Filter>Taiko</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimationBullet.cpp">
+      <Filter>Taiko</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scene.h">
@@ -105,6 +111,12 @@
       <Filter>Taiko</Filter>
     </ClInclude>
     <ClInclude Include="BulletBaloon.h">
+      <Filter>Taiko</Filter>
+    </ClInclude>
+    <ClInclude Include="BulletNormal.h">
+      <Filter>Taiko</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationBullet.h">
       <Filter>Taiko</Filter>
     </ClInclude>
   </ItemGroup>

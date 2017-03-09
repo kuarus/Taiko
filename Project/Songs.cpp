@@ -237,7 +237,6 @@ Songs::GENRE Songs::getGenre( std::string directory ) const {
 }
 
 std::vector< Songs::MEASURE > Songs::getCode( std::string filename, DIFF diff, double bpm ) const {
-	double tmp_bpm = bpm;
 	std::vector< MEASURE > code;
 	std::string tmp_str;
 	std::ifstream ifs( filename );
@@ -284,10 +283,13 @@ std::vector< Songs::MEASURE > Songs::getCode( std::string filename, DIFF diff, d
 	}
 	bool go_go_time = false;
 	std::string measure_str;
+	double tmp_bpm = bpm;
+	double tmp_scroll = 1.0;
 
 	while ( std::getline( ifs, tmp_str ) ) {
 		MEASURE measure = MEASURE( );
 		measure.bpm = tmp_bpm;
+		measure.scroll = tmp_scroll;
 		measure.measure = calcString( 4.0, measure_str );
 		measure.go_go_time = go_go_time;
 		if ( !start ) {
@@ -321,6 +323,11 @@ std::vector< Songs::MEASURE > Songs::getCode( std::string filename, DIFF diff, d
 				tmp_bpm = std::stod( tmp_str, 0 );
 				continue;
 			}
+			if ( std::strstr( tmp_str.c_str( ), "#SCROLL " ) != NULL ) {
+				tmp_str.replace( 0, 8, "" );
+				tmp_scroll = std::stod( tmp_str, 0 );
+				continue;
+			}
 			if ( std::strstr( tmp_str.c_str( ), "#N" ) != NULL ) {
 				//ïÅí ïàñ 
 				through = true;
@@ -352,6 +359,7 @@ std::vector< Songs::MEASURE > Songs::getCode( std::string filename, DIFF diff, d
 				}
 				code.push_back( measure );
 			}
+			//tmp_bpm = bpm;
 		}
 	}
 	return code;

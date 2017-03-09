@@ -26,7 +26,7 @@ void BulletBaloon::update( int seq, GamePtr game ) {
 			idx = 0;
 		}
 	}
-	int x = idx * SPEED + JUDGE_X;
+	int x = (int)( (double)( idx * SPEED * code.speed + JUDGE_X ) );
 	setX( x );
 }
 
@@ -43,9 +43,13 @@ void BulletBaloon::draw( int* image ) const {
 	Drawer::drawGraph( 12, 0, x1, y1, x2, y2, CHIP_SIZE, CHIP_SIZE, *image );
 }
 
-Bullet::JUDGE BulletBaloon::checkJudge( int idx, GamePtr game ) const {
+Bullet::JUDGE BulletBaloon::checkJudge( GamePtr game ) const {
 	return Bullet::JUDGE::JUDGE_NONE;
 }
 
 void BulletBaloon::setTurn( ) {
+}
+
+bool BulletBaloon::checkPush( int idx, GamePtr game ) const {
+	return false;
 }

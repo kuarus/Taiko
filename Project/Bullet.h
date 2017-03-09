@@ -29,6 +29,7 @@ public:
 	struct CODE {
 		int idx;
 		int num;
+		double speed;
 		TYPE type;
 		CODE( ) {
 			this->idx = 0;
@@ -40,16 +41,16 @@ public:
 	Bullet( CODE code );
 	virtual ~Bullet( );
 public:
-	virtual void update( int seq, GamePtr game );
-	virtual void draw( int* image ) const;
+	virtual void update( int seq, GamePtr game ) = 0;
+	virtual void draw( int* image ) const = 0;
 	virtual bool isOutSideScreen( ) const;
-	virtual JUDGE checkJudge( GamePtr game ) const;
+	virtual JUDGE checkJudge( GamePtr game ) const = 0;
 	int getIdx( ) const;
-	virtual void setTurn( );
-	bool isTurn( ) const;
 	int getDistanceToJudge( ) const;
+	void setThroughed( );
 	void setFinished( );
 	bool isFinished( ) const;
+	TYPE getType( ) const;
 protected:
 	int getX( ) const;
 	int getY( ) const;
@@ -57,6 +58,10 @@ protected:
 	int getHeight( ) const;
 	CODE getCode( ) const;
 	void setX( int x );
+	void setSeqIdx( int idx );
+	int getSeqIdx( ) const;
+	virtual bool checkPush( int idx, GamePtr game ) const = 0;
+	bool isThroughed( ) const;
 private:
 	struct CHIP_POS {
 		int tx;
@@ -71,15 +76,12 @@ private:
 		}
 	};
 private:
-	bool checkPush( int idx, GamePtr game ) const;
-private:
 	int _x;
 	int _y;
-	int _speed;
 	int _width;
 	int _height;
-	bool _turn;
 	bool _finish;
+	bool _through;
 	int _count;
 	int _seq_idx;
 	CODE _code;

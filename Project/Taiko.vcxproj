@@ -11,8 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnimationBullet.cpp" />
     <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="BulletBaloon.cpp" />
+    <ClCompile Include="BulletNormal.cpp" />
     <ClCompile Include="BulletYellow.cpp" />
     <ClCompile Include="Drawer.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -28,8 +30,10 @@
     <ClCompile Include="SceneTitle.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AnimationBullet.h" />
     <ClInclude Include="Bullet.h" />
     <ClInclude Include="BulletBaloon.h" />
+    <ClInclude Include="BulletNormal.h" />
     <ClInclude Include="BulletYellow.h" />
     <ClInclude Include="define.h" />
     <ClInclude Include="Drawer.h" />

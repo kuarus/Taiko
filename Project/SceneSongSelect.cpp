@@ -21,6 +21,9 @@ _selecting_diff( Songs::DIFF::EASY ) {
 	_bg_image = Drawer::loadGraph( "Resource/img/song_select_bg.png" );
 	audition( );
 	Drawer::changeFont( V_FONT );
+	for ( int i = 0; i < Songs::DIFF::MAX_DIFF; i++ ) {
+		_level[ i ] = 0;
+	}
 }
 
 
@@ -43,7 +46,7 @@ void SceneSongSelect::update( GamePtr game ) {
 		break;
 	case STATE::STATE_SELECT_DIFF:
 		if ( game->isNext( ) ) {
-			if ( _songs->getLevel( _select, _selecting_diff ) != 0 ) {
+			if ( _level[ _selecting_diff ] != 0 ) {
 				game->setSelectSong( _select, _selecting_diff );
 				game->setScene( Game::SCENE::SCENE_PLAY );
 			}
@@ -76,7 +79,6 @@ void SceneSongSelect::drawSelecting( ) {
 			}
 		}
 		Songs::DIFF diff = (Songs::DIFF)i;
-		int level = _songs->getLevel( _select, diff );
 		std::string diff_str;
 		switch ( diff ) {
 		case Songs::DIFF::ONI:
@@ -95,7 +97,7 @@ void SceneSongSelect::drawSelecting( ) {
 		Drawer::drawVString( x, y + 20, diff_str.c_str( ), selecting );
 		for ( int j = 1 + i; j <= MAX_LEVEL; j++ ) {
 			std::string star = "™";
-			if ( MAX_LEVEL - j < level ) {
+			if ( MAX_LEVEL - j < _level[ diff ] ) {
 				star = "š";
 			}
 			Drawer::drawVString( x, y + FONT_SIZE * 5 + j * FONT_SIZE, star.c_str( ) );
@@ -154,6 +156,7 @@ void SceneSongSelect::select( GamePtr game ) {
 			_select += list_size;
 		}
 		if ( push ) {
+			setLevel( );
 			audition( );
 		}
 		break;
@@ -180,4 +183,10 @@ void SceneSongSelect::audition( ) {
 	_music = Sound::load( _song_list[ _select ].music.c_str( ) );
 	Sound::playMusic( _music, true, _song_list[ _select ].demo_pos );
 	Sound::changeVol( 240, _music );
+}
+
+void SceneSongSelect::setLevel( ) {
+	for ( int i = 0; i < Songs::DIFF::MAX_DIFF; i++ ) {
+		_level[ i ] = _songs->getLevel( _select, (Songs::DIFF)i );
+	}
 }

@@ -1,23 +1,16 @@
 #pragma once
+
 #include "Bullet.h"
-class BulletBaloon : public Bullet {
+
+class BulletNormal : public Bullet {
 public:
-	BulletBaloon( CODE code );
-	virtual ~BulletBaloon( );
+	BulletNormal( CODE code );
+	virtual ~BulletNormal( );
 public:
 	void update( int seq, GamePtr game );
 	void draw( int* image ) const;
 	JUDGE checkJudge( GamePtr game ) const;
-	void setTurn( );
 private:
 	bool checkPush( int idx, GamePtr game ) const;
-private:
-	enum STATE {
-		STATE_NORMAL,
-		STATE_WAIT,
-		STATE_OUT,
-		MAX_STATE
-	};
-private:
-	STATE _state;
 };
+

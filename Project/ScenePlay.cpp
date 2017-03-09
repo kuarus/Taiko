@@ -5,6 +5,8 @@
 #include "Sound.h"
 #include "BulletYellow.h"
 #include "BulletBaloon.h"
+#include "BulletNormal.h"
+#include "AnimationBullet.h"
 
 
 static const int WAIT_APPEAR_TIME = 40;
@@ -99,7 +101,8 @@ void ScenePlay::draw( GamePtr game ) {
 	drawBarLine( );
 	drawFlash( game );
 	drawMeasure( );
-	drawExplosion( );
+	drawAnimationBullet( );
+ 	drawExplosion( );
 	drawMTaikoFront( game );
 	drawJudge( );
 	drawTitle( );
@@ -145,16 +148,20 @@ void ScenePlay::loadSounds( ) {
 void ScenePlay::updateStart( GamePtr game ) {
 	int time = (int)(double)( _count * 100 ) / 6;
 	int now = (int)( (double)( time - OFFSET ) + _song.offset * 1000 );
-	double pitch = convertMsToPitch( -1 );
+	double pitch = convertMsToPitch( 0 );
 	int seq = (int)( (double)now / pitch );
 	int mark = ( _idx + 1 ) * MAX_CODE;
 	_before_seq = seq;
 	updateMeasure( game, seq );
 	updateJudge( );
 	createMeasure( );
-
-	if ( ( time >= OFFSET ) ||
-		 ( _start_idx - OFFSET >= (int)( ( _song.offset * 1000 ) / pitch ) ) ) { 
+	if ( seq >= mark &&
+		_before_seq < mark ) {
+		_idx++;
+		_time += (int)( pitch * MAX_CODE );
+	}
+	if ( ( time >= OFFSET )  ||
+		 ( _start_idx - OFFSET >= (int)( ( _song.offset * 1000 ) / pitch ) ) ) {
 		Sound::playMusic( _music, false );
 		Sound::changeVol( VOL, _music );
 		_play_state = PLAY_STATE::PLAY_STATE_PLAY;
@@ -223,7 +230,8 @@ void ScenePlay::updateMeasure( GamePtr game, int seq ) {
 		setJudge( judge );
 		if ( judge != Bullet::JUDGE::JUDGE_BAD &&
 			 judge != Bullet::JUDGE::JUDGE_THROUGH ) {
-			hit->setTurn( );
+			addAnimation( hit->getType( ) );
+			hit->setFinished( );
 		}
 	}
 }
@@ -276,18 +284,19 @@ BulletPtr ScenePlay::updateBullet( GamePtr game, MEASURE* measure, int seq ) {
 		}
 		bullet->update( seq, game );
 		if ( bullet->isOutSideScreen( ) || bullet->isFinished( ) ) {
+			//if ( bullet->isFinished( ) ) {
+			//	addAnimation( bullet->getType( ) );
+			//}
 			ite = (*measure).bullets.erase( ite );
 			continue;
 		}
-		if ( !bullet->isTurn( ) ) {
-			Bullet::JUDGE judge = bullet->checkJudge( game );
-			if ( judge != Bullet::JUDGE::JUDGE_NONE ) {
-				if ( judge == Bullet::JUDGE::JUDGE_THROUGH ) {
-					through_bullet = bullet;
-				}
-				if ( judge != Bullet::JUDGE::JUDGE_THROUGH ) {
-					hits.push_back( bullet );
-				}
+		Bullet::JUDGE judge = bullet->checkJudge( game );
+		if ( judge != Bullet::JUDGE::JUDGE_NONE ) {
+			if ( judge == Bullet::JUDGE::JUDGE_THROUGH ) {
+				through_bullet = bullet;
+			}
+			if ( judge != Bullet::JUDGE::JUDGE_THROUGH ) {
+				hits.push_back( bullet );
 			}
 		}
 		ite++;
@@ -309,7 +318,7 @@ BulletPtr ScenePlay::updateBullet( GamePtr game, MEASURE* measure, int seq ) {
 	}
 	if ( !hit ) {
 		if ( through_bullet ) {
-			through_bullet->setFinished( );
+			through_bullet->setThroughed( );
 			setJudge( Bullet::JUDGE_THROUGH );
 		}
 	}
@@ -354,7 +363,8 @@ void ScenePlay::drawMeasure( ) const {
 void ScenePlay::drawBullet( MEASURE measure ) const {
 	std::list< BulletPtr >::const_iterator ite = measure.bullets.begin( );
 	while ( ite != measure.bullets.end( ) ) {
-		if ( !*ite) {
+		if ( !(*ite) ) {
+			ite++;
 			continue;
 		}
 		(*ite)->draw( &(int)_image[ IMAGE::IMAGE_NOTS ] );
@@ -505,6 +515,24 @@ void ScenePlay::drawScore( int score ) const {
 	}
 }
 
+void ScenePlay::drawAnimationBullet( ) {
+	std::list< AnimationBulletPtr >::iterator ite = _animations.begin( );
+	while ( ite != _animations.end( ) ) {
+		AnimationBulletPtr anim = *ite;
+		if ( !anim ) {
+			ite++;
+			continue;
+		}
+		if ( anim->isFinished( ) ) {
+			ite = _animations.erase( ite );
+			continue;
+		}
+		anim->update( );
+		anim->draw( &_image[ IMAGE::IMAGE_NOTS ] );
+		ite++;
+	}
+}
+
 void ScenePlay::drawSoulGauge( ) const {
 	const int WIDTH = 12;
 	const int HEIGHT = 32;
@@ -554,24 +582,25 @@ void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
 			size = MAX_CODE / code_size;
 		}
 		int start_idx = 0;
-		int tmp_type;
+		int tmp_type = 0;
 		int num = 0;
-		bool existence = false;
+		int scroll = _song.measures[ i ].scroll;
+		bool existence = true;
 		for ( int j = 0; j < code_size; j++ ) {
 			char type = _song.measures[ i ].codes[ j ];
 			int idx = ( MAX_CODE * i ) + ( j * size );
 			if ( type >= 5 && type <= 7 ) {
-				existence = true;
+				existence = false;
 				start_idx = idx;
 				tmp_type = type;
 			}
 			if ( type == 8 ) {
-				if ( existence ) {
-					existence = false;
+				if ( !existence ) {
+					existence = true;
 					type = tmp_type;
 				}
 			}
-			if ( existence ) {
+			if ( !existence ) {
 				num += size;
 			}
 			if ( type == 0 ) {
@@ -580,9 +609,10 @@ void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
 			if ( type >= 9 ) {
 				continue;
 			}
-			if ( !existence ) {
+			if ( existence ) {
 				Bullet::CODE code = Bullet::CODE( );
 				code.idx = idx;
+				code.speed = scroll;
 				code.type = (Bullet::TYPE)type;
 
 				if ( type >= 5 && type <= 7 ) {
@@ -607,14 +637,12 @@ void ScenePlay::setJudge( Bullet::JUDGE judge ) {
 
 void ScenePlay::createMeasure( ) {
 	std::vector< std::vector< Bullet::CODE > >::iterator ite = _loaded_measures.begin( );
-	while ( ite != _loaded_measures.end( ) ) {
+	if ( ite != _loaded_measures.end( ) ) {
 		std::vector< Bullet::CODE > codes = *ite;
 		if ( codes.at( 0 ).idx < _idx * MAX_CODE + LOAD_IDX ) {
 			createBullet( codes );
 			ite = _loaded_measures.erase( ite );
-			continue;
 		}
-		ite++;
 	}
 }
 
@@ -625,6 +653,18 @@ void ScenePlay::createBullet( std::vector< Bullet::CODE > codes ) {
 		Bullet::CODE code = *ite;
 		BulletPtr bullet = BulletPtr( );
 		switch ( code.type ) {
+		case Bullet::TYPE::TYPE_DONG:
+			bullet = BulletPtr( new BulletNormal( code ) );
+			break;
+		case Bullet::TYPE::TYPE_KA:
+			bullet = BulletPtr( new BulletNormal( code ) );
+			break;
+		case Bullet::TYPE::TYPE_BIG_DONG:
+			bullet = BulletPtr( new BulletNormal( code ) );
+			break;
+		case Bullet::TYPE::TYPE_BIG_KA:
+			bullet = BulletPtr( new BulletNormal( code ) );
+			break;
 		case Bullet::TYPE::TYPE_YELLOW:
 			bullet = BulletPtr( new BulletYellow( code ) );
 			break;
@@ -635,7 +675,6 @@ void ScenePlay::createBullet( std::vector< Bullet::CODE > codes ) {
 			bullet = BulletPtr( new BulletBaloon( code ) );
 			break;
 		default:
-			bullet = BulletPtr( new Bullet( code ) );
 			break;
 		}
 
@@ -690,6 +729,11 @@ void ScenePlay::addScore( ) {
 		break;
 	}
 }
+
+void ScenePlay::addAnimation( Bullet::TYPE type ) {
+	_animations.push_back( AnimationBulletPtr( new AnimationBullet( type ) ) );
+}
+
 
 double ScenePlay::convertMsToPitch( int idx ) {
 	if ( idx == -1 ) {
