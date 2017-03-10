@@ -584,7 +584,9 @@ void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
 		int start_idx = 0;
 		int tmp_type = 0;
 		int num = 0;
-		int scroll = _song.measures[ i ].scroll;
+		double scroll = _song.measures[ i ].scroll;
+		double measure = _song.measures[ i ].measure / 4;
+		//double bpm_speed = _song.bpm / _song.measures[ i ].measure;
 		bool existence = true;
 		for ( int j = 0; j < code_size; j++ ) {
 			char type = _song.measures[ i ].codes[ j ];
@@ -612,7 +614,7 @@ void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
 			if ( existence ) {
 				Bullet::CODE code = Bullet::CODE( );
 				code.idx = idx;
-				code.speed = scroll;
+				code.speed = scroll * measure;// * bpm_speed;
 				code.type = (Bullet::TYPE)type;
 
 				if ( type >= 5 && type <= 7 ) {
