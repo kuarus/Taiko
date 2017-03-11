@@ -14,15 +14,20 @@ public:
 	struct GENRE {
 		std::string name;
 		std::string color_code;
+		std::string font_color;
 	};
 	struct SONG_INFO {
 		GENRE genre;
 		std::string title;
 		std::string music;
 		std::string filename;
+		int level[ DIFF::MAX_DIFF ];
 		int demo_pos;
 		SONG_INFO( ) {
 			this->demo_pos = 0;
+			for ( int i = 0; i < DIFF::MAX_DIFF; i++ ) {
+				this->level[ i ] = 0;
+			}
 		}
 	};
 	struct MEASURE {
@@ -54,8 +59,8 @@ public:
 	std::vector< SONG_INFO > getSongInfoList( ) const;
 	SONG_DATA getSongData( int idx, DIFF diff ) const;
 	SONG_INFO getInfo( int idx ) const;
-	int getLevel( int idx, DIFF diff ) const;
 private:
+	int getLevel( std::string filename, DIFF diff ) const;
 	void loadSongInfoList( );
 	std::vector< std::string > getDirectoryList( ) const;
 	GENRE getGenre( std::string directory ) const;

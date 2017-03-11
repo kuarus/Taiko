@@ -9,7 +9,6 @@ static const unsigned int MENU_COLOR = Drawer::getColor( 255, 130, 70 );
 
 SceneMenu::SceneMenu( ) :
 _select( 0 ) {
-	Drawer::changeFont( V_FONT );
 }
 
 
@@ -45,23 +44,22 @@ void SceneMenu::draw( GamePtr game ) {
 	int sy2 = sy1 + menu_height;
 	
 	for ( int i = 0; i < MENU_NUM; i++ ) {
-		bool selecting = false;
+		unsigned int color = Drawer::getColor( 255, 255, 255 );
 		if ( i == _select ) {
-			selecting = true;
+			color = Drawer::getColor( 0, 150, 255 );
 		}
 		sx1 = ( WINDOW_WIDTH - 100 ) / MENU_NUM * i - menu_width / 2 + 200;
 		sx2 = sx1 + menu_width;
  		Drawer::drawBox( sx1, sy1, sx2, sy2, MENU_COLOR );
-		unsigned int color = Drawer::getColor( 255, 255, 255 );
 		switch( i ) {
 		case 0:
-			Drawer::drawVString( sx1 + 30, sy1 + 50, "曲を選択する", selecting );
+			Drawer::drawVString( sx1 + 30, sy1 + 50, color, "曲を選択する" );
 			break;
 		case 1:
-			Drawer::drawVString( sx1 + 30, sy1 + 50, "設定", selecting );
+			Drawer::drawVString( sx1 + 30, sy1 + 50, color, "設定" );
 			break;
 		case 2:
-			Drawer::drawVString( sx1 + 30, sy1 + 50, "ゲームを終了する", selecting );
+			Drawer::drawVString( sx1 + 30, sy1 + 50, color, "ゲームを終了する" );
 			break;
 		}
 	}

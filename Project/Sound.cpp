@@ -28,6 +28,7 @@ void Sound::playMusic( int handle, bool loop, int position ) {
 		dx_type = DX_PLAYTYPE_LOOP;
 		if ( position != 0 ) {
 			top = FALSE;
+			//SetLoopStartTimePosSoundMem( position, handle );
 			SetSoundCurrentTime( position, handle );
 		}
 	}

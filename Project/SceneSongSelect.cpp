@@ -13,24 +13,34 @@ static const int INTERVAL = 20;
 
 SceneSongSelect::SceneSongSelect( SongsPtr songs, int select ) :
 _select( select ),
-_music( 0 ),
 _state( STATE::STATE_SELECT_SONG ),
 _selecting_diff( Songs::DIFF::EASY ) {
-	_songs = songs;
-	_song_list = _songs->getSongInfoList( );
+	_song_list = songs->getSongInfoList( );
 	_bg_image = Drawer::loadGraph( "Resource/img/song_select_bg.png" );
-	audition( );
-	Drawer::changeFont( V_FONT );
-	for ( int i = 0; i < Songs::DIFF::MAX_DIFF; i++ ) {
-		_level[ i ] = 0;
+	Drawer::changeFontSize( FONT_SIZE * 4 );
+	for ( int i = 0; i < 1024; i++ ) {
+		if ( i >= (int)_song_list.size( ) ) {
+			_music[ i ] = 0;
+			continue;
+		}
+		if ( i % 20 == 0 ) {
+			int pattern = i / 20 % 4;
+			Drawer::drawLoading( pattern );
+		}
+		_music[ i ] = Sound::load( _song_list[ i ].music.c_str( ) );
 	}
+
+	audition( 0 );
+	Drawer::changeFontSize( FONT_SIZE );
 }
 
 
 SceneSongSelect::~SceneSongSelect( ) {
 	Drawer::deleteGraph( _bg_image );
-	Sound::stop( _music );
-	Sound::destroy( _music );
+	Sound::stop( _music[ _select ] );
+	for ( int i = 0; i < 1024; i++ ) {
+		Sound::destroy( _music[ i ] );
+	}
 }
 
 void SceneSongSelect::update( GamePtr game ) {
@@ -46,7 +56,7 @@ void SceneSongSelect::update( GamePtr game ) {
 		break;
 	case STATE::STATE_SELECT_DIFF:
 		if ( game->isNext( ) ) {
-			if ( _level[ _selecting_diff ] != 0 ) {
+			if (  _song_list[ _select ].level[ _selecting_diff ] != 0 ) {
 				game->setSelectSong( _select, _selecting_diff );
 				game->setScene( Game::SCENE::SCENE_PLAY );
 			}
@@ -65,17 +75,16 @@ void SceneSongSelect::draw( GamePtr game ) {
 
 void SceneSongSelect::drawSelecting( ) {
 	std::string title =  _song_list[ _select ].title;
-	unsigned int color = Drawer::getColor( _song_list[ _select ].genre.color_code );
 	int x = SELECTING_X;
 	int y = MENU_Y;
-	drawSong( x, y, x + SELECTING_WIDTH, y + MENU_HEIGHT, color, _select );
+	drawSong( x, y, x + SELECTING_WIDTH, y + MENU_HEIGHT, _select );
 	y += 30;
 	x += 10;
 	for ( int i = 0; i < Songs::DIFF::MAX_DIFF; i++ ) {
-		bool selecting = false;
+		unsigned int color = Drawer::getColor( 255, 255, 255 );
 		if ( _state == STATE::STATE_SELECT_DIFF ) {
 			if ( i == (int)_selecting_diff ) {
-				selecting = true;
+				color = Drawer::getColor( 0, 150, 255 );
 			}
 		}
 		Songs::DIFF diff = (Songs::DIFF)i;
@@ -94,22 +103,24 @@ void SceneSongSelect::drawSelecting( ) {
 			diff_str = "‚©‚ñ‚½‚ñ@@";
 			break;
 		}
-		Drawer::drawVString( x, y + 20, diff_str.c_str( ), selecting );
+		Drawer::drawVString( x, y + 20, color, diff_str.c_str( ) );
 		for ( int j = 1 + i; j <= MAX_LEVEL; j++ ) {
 			std::string star = "™";
-			if ( MAX_LEVEL - j < _level[ diff ] ) {
+			if ( MAX_LEVEL - j < _song_list[ _select ].level[ diff ] ) {
 				star = "š";
 			}
-			Drawer::drawVString( x, y + FONT_SIZE * 5 + j * FONT_SIZE, star.c_str( ) );
+			Drawer::drawVString( x, y + FONT_SIZE * 5 + j * FONT_SIZE, color, star.c_str( ) );
 		}
 		x += FONT_SIZE + 20;
 	}	
 }
 
-void SceneSongSelect::drawSong( int x1, int y1, int x2, int y2, unsigned int color, int idx ) {
+void SceneSongSelect::drawSong( int x1, int y1, int x2, int y2, int idx ) {
 	std::string title = _song_list[ idx ].title;
-	Drawer::drawBox( x1, y1, x2, y2, color );
-	Drawer::drawVString( x2 - 60, y1 + 20, title.c_str( ) );
+	unsigned int box_color = Drawer::getColor( _song_list[ idx ].genre.color_code );
+	unsigned int font_color = Drawer::getColor( _song_list[ idx ].genre.font_color );
+	Drawer::drawBox( x1, y1, x2, y2, box_color );
+	Drawer::drawVString( x2 - 60, y1 + 20, font_color, title.c_str( ) );
 }
 
 void SceneSongSelect::drawSongList( ) {
@@ -129,16 +140,15 @@ void SceneSongSelect::drawSongList( ) {
 		}
 		int x0 = SELECTING_X + SELECTING_WIDTH + INTERVAL + i * ( menu_width + INTERVAL );
 		int x1 = SELECTING_X - INTERVAL - menu_width - i * ( menu_width + INTERVAL );
-		unsigned int color0 = Drawer::getColor( _song_list[ idx0 ].genre.color_code );
-		unsigned int color1 = Drawer::getColor( _song_list[ idx1 ].genre.color_code );
-		drawSong( x0, MENU_Y, x0 + menu_width, MENU_HEIGHT, color0, idx0 );
-		drawSong( x1, MENU_Y, x1 + menu_width, MENU_HEIGHT, color1, idx1 );
+		drawSong( x0, MENU_Y, x0 + menu_width, MENU_HEIGHT, idx0 );
+		drawSong( x1, MENU_Y, x1 + menu_width, MENU_HEIGHT, idx1 );
 	}
 }
 
 void SceneSongSelect::select( GamePtr game ) {
 	int list_size = _song_list.size( );
 	bool push = false;
+	int old_select = _select;
 	int selecting_diff = (int)_selecting_diff;
 
 	switch ( _state ) {
@@ -156,8 +166,7 @@ void SceneSongSelect::select( GamePtr game ) {
 			_select += list_size;
 		}
 		if ( push ) {
-			setLevel( );
-			audition( );
+			audition( old_select );
 		}
 		break;
 	case STATE::STATE_SELECT_DIFF:
@@ -178,15 +187,9 @@ void SceneSongSelect::select( GamePtr game ) {
 	}
 }
 
-void SceneSongSelect::audition( ) {
-	Sound::stop( _music );
-	_music = Sound::load( _song_list[ _select ].music.c_str( ) );
-	Sound::playMusic( _music, true, _song_list[ _select ].demo_pos );
-	Sound::changeVol( 240, _music );
-}
-
-void SceneSongSelect::setLevel( ) {
-	for ( int i = 0; i < Songs::DIFF::MAX_DIFF; i++ ) {
-		_level[ i ] = _songs->getLevel( _select, (Songs::DIFF)i );
-	}
+void SceneSongSelect::audition( int old_select ) {
+	Sound::stop( _music[ old_select ] );
+	//_music[ _select ] = Sound::load( _song_list[ _select ].music.c_str( ) );
+	Sound::playMusic( _music[ _select ], true, _song_list[ _select ].demo_pos );
+	Sound::changeVol( 240, _music[ _select ] );
 }

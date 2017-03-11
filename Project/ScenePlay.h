@@ -118,7 +118,7 @@ private:
 	int _music;
 	int _before_seq;
 	int _count;
-	int _time;
+	double _time;
 	int _flash_count;
 	int _image[ IMAGE::MAX_IMAGE ];
 	int _combo_sound[ COMBO::MAX_COMBO ];

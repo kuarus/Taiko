@@ -34,27 +34,28 @@ void SceneResult::update( GamePtr game ) {
 }
 
 void SceneResult::draw( GamePtr game ) {
+	unsigned int color = Drawer::getColor( 255, 255, 255 );
 	Drawer::drawGraph( 0, 0, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 512, 384, _bg_image );
 	SetFontSize( FONT_SIZE * 3 );
-	Drawer::drawString( 280, 60, "リザルト" );
+	Drawer::drawString( 280, 60, color, "リザルト" );
 	SetFontSize( FONT_SIZE );
 	int x = 300;
 	int y = 200;
-	Drawer::drawString( x, y, "　良：%d", _view.great );
+	Drawer::drawString( x, y, color, "　良：%d", _view.great );
 	y += FONT_SIZE;
-	Drawer::drawString( x, y, "　可：%d", _view.good );
+	Drawer::drawString( x, y, color, "　可：%d", _view.good );
 	y += FONT_SIZE;
-	Drawer::drawString( x, y, "不可：%d", _view.bad );
+	Drawer::drawString( x, y, color, "不可：%d", _view.bad );
 
 	x = 500;
 	y = 200;
-	Drawer::drawString( x, y, "　　スコア：%d", _view.score );
+	Drawer::drawString( x, y, color, "　　スコア：%d", _view.score );
 	y += FONT_SIZE;
-	Drawer::drawString( x, y, "最終コンボ：%d", _view.combo );
+	Drawer::drawString( x, y, color, "最終コンボ：%d", _view.combo );
 	y += FONT_SIZE;
-	Drawer::drawString( x, y, "最大コンボ：%d", _view.max_combo );
+	Drawer::drawString( x, y, color, "最大コンボ：%d", _view.max_combo );
 
-	Drawer::drawString( 100, 0, "曲選択に戻る:<Q><BackSpace><Space><D><F><J><K>" );
+	Drawer::drawString( 100, 0, color, "曲選択に戻る:<Q><BackSpace><Space><D><F><J><K>" );
 }
 
 int SceneResult::addNum( int num1, int num2 ) {

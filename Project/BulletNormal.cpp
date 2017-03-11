@@ -70,7 +70,7 @@ bool BulletNormal::checkPush( int idx, GamePtr game ) const {
 	if ( diff < 0 ) {
 		diff *= -1;
 	}
-	if ( game->isAutomatic( ) && diff <= 2 ) {
+	if ( game->isAutomatic( ) && diff < JUDGE_GREAT_RANGE ) {
 		automatic_just = true;
 	}
 	switch ( code.type ) {

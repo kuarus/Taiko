@@ -16,19 +16,16 @@ private:
 	};
 private:
 	void drawSelecting( );
-	void drawSong( int x1, int y1, int x2, int y2, unsigned int color, int idx );
+	void drawSong( int x1, int y1, int x2, int y2, int idx );
 	void drawSongList( );
 	void select( GamePtr game );
-	void audition( );
-	void setLevel( );
+	void audition( int old_select );
 private:
 	int _bg_image;
 	int _select;
-	int _music;
-	int _level[ Songs::DIFF::MAX_DIFF ];
+	int _music[ 1024 ];
 	STATE _state;
 	Songs::DIFF _selecting_diff;
-	SongsPtr _songs;
 	std::vector< Songs::SONG_INFO > _song_list;
 };
 

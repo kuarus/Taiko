@@ -11,13 +11,15 @@
 #include "Drawer.h"
 #include "Sound.h"
 
+static const int FPS = 120;
+
 Game::Game( ) :
 _scene( SCENE::SCENE_TITLE ),
 _old_scene( _scene ),
 _selecting_song( 0 ),
 _is_finish( false ) {
 	ChangeWindowMode( TRUE );
-	SetGraphMode( WINDOW_WIDTH, WINDOW_HEIGHT, 16 );
+	SetGraphMode( WINDOW_WIDTH, WINDOW_HEIGHT, 16, FPS );
 	SetAlwaysRunFlag( TRUE );
 	if ( DxLib_Init( ) == -1 ) {
 		return;
@@ -27,6 +29,7 @@ _is_finish( false ) {
 	SetDrawScreen( DX_SCREEN_BACK );
 	SetDrawMode( DX_DRAWMODE_BILINEAR ) ;
 	SetFontSize( FONT_SIZE );
+	ChangeFont( "HGçsèëëÃ" );
 
 	for ( int i = 0; i < GRAPH_MAX; i++ ) {
 		_images[ i ] = 0;

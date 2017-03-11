@@ -2,9 +2,9 @@
 #include "DxLib.h"
 #include "define.h"
 #include <algorithm>
+
 Drawer::Drawer( ) {
 }
-
 
 Drawer::~Drawer( ) {
 }
@@ -43,15 +43,56 @@ unsigned int Drawer::getColor( std::string color_code ) {
 }
 
 
-void Drawer::drawVString( int x, int y, const char* str, bool selecting ) {
-	int color = GetColor( 255, 255, 255 );
-	if ( selecting ) {
-		color = GetColor( 100, 0, 100 );
+void Drawer::drawVString( int x, int y, unsigned int color, const char* str, ... ) {
+	if ( x > WINDOW_WIDTH ||
+		 y > WINDOW_HEIGHT) {
+		return;
 	}
-	DrawVString( x, y, str, color, GetColor( 0, 0, 0 ) );
+	if ( x < -FONT_SIZE ||
+		 y < -FONT_SIZE ) {
+		return;
+	}
+	char buf[ 1024 ] = { 0 };
+	va_list list;
+	va_start( list, str );
+	vsprintf_s( buf, 1024, str, list );
+	std::string string( buf, 1024 );
+	int size = string.size( );
+	//std::string check = "";
+	while ( string.at( 0 ) != 0 ) {
+		std::string tmp;
+		if ( IsDBCSLeadByte( string[ 0 ] ) == 0 ) {
+			tmp = string.substr( 0, 1 );
+			string.erase( 0, 1 );
+			if ( tmp < "A" ||
+				 tmp > "z" )  {
+				DrawRotaString( x, y, 1, 1, 0, FONT_SIZE, 3.14 / 2, color, GetColor( 0, 0, 0 ), false, tmp.c_str( ) );
+				//DrawVString( x, y, tmp.c_str( ), color );
+			} else {
+				DrawString( x + 4, y, tmp.c_str( ), color );
+			}
+			y -= 2;
+		} else {
+			tmp = string.substr( 0, 2 );
+			string.erase( 0, 2 );
+			if ( tmp >= "ÅN" &&
+				 tmp <= "Å¸" &&
+				 tmp != "Åô" &&
+				 tmp != "Åö" )  {
+				DrawRotaString( x, y, 1, 1, 0, FONT_SIZE, 3.14 / 2, color, GetColor( 0, 0, 0 ), false, tmp.c_str( ) );
+			} else {
+				DrawString( x, y, tmp.c_str( ), color );
+			}
+		}
+		y += FONT_SIZE;
+		if ( string.size( ) == 0 ) {
+			break;
+		}
+	}
+	va_end( list );
 }
 
-void Drawer::drawString( int x, int y, const char* str, ... ) {
+void Drawer::drawString( int x, int y, unsigned int color, const char* str, ... ) {
 	char buf[ 1024 ];
 	va_list list;
 	va_start( list, str );
@@ -60,16 +101,27 @@ void Drawer::drawString( int x, int y, const char* str, ... ) {
 	va_end( list );
 }
 
+void Drawer::changeFontSize( int font_size ) {
+	SetFontSize( font_size );
+}
+
+void Drawer::drawLoading( int pattern ) {
+	std::string str = "ì«Ç›çûÇ›íÜ";
+	for ( int i = 0; i < pattern; i++ ) {
+		str += ".";
+	}
+	Drawer::drawBox( 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, Drawer::getColor( 200, 0, 20 ) );
+	Drawer::drawString( 100, 200, GetColor( 255, 255, 255 ),str.c_str( ) );
+	ScreenFlip( );
+	ClearDrawScreen( );
+}
+
 int Drawer::loadGraph( const char* filename ) {
 	return LoadGraph( filename );
 }
 
 void Drawer::deleteGraph( int handle ) {
 	DeleteGraph( handle );
-}
-
-void Drawer::changeFont( const char* type ) {
-	ChangeFont( type );
 }
 
 void Drawer::drawLine( int x1, int y1, int x2, int y2 ) {

@@ -10,8 +10,10 @@ public:
 	static void drawBox( int x1, int y1, int x2, int y2, unsigned int color );
 	static unsigned int getColor( int red, int green, int blue );
 	static unsigned int getColor( std::string color_code );
-	static void drawVString( int x, int y, const char* str, bool selecting = false );
-	static void drawString( int x, int y, const char* str, ... );
+	static void drawVString( int x, int y, unsigned int color, const char* str, ... );
+	static void drawString( int x, int y, unsigned int color, const char* str, ... );
+	static void changeFontSize( int size );
+	static void drawLoading( int pattern );
 	static int loadGraph( const char* filename );
 	static void deleteGraph( int handle );
 	static void changeFont( const char* type );

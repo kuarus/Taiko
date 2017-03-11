@@ -11,7 +11,7 @@
 
 static const int WAIT_APPEAR_TIME = 40;
 static const int OFFSET = 1000;
-static const int LOAD_IDX = 600;
+static const int LOAD_IDX = 4000;
 static const int VOL = 255;//MAX255
 static const int MAX_GAUGE = 36;
 //score
@@ -32,7 +32,6 @@ _count( 0 ),
 _judge( Bullet::JUDGE::JUDGE_NONE ),
 _judge_draw( Bullet::JUDGE::JUDGE_NONE ),
 _flash_type( Bullet::TYPE::TYPE_NONE ) {
-	Drawer::changeFont( H_FONT );
 	Songs::SONG_INFO song_info = songs->getInfo( select );
 	std::string music_file = song_info.music;
 	_song = songs->getSongData( select, diff );
@@ -146,8 +145,8 @@ void ScenePlay::loadSounds( ) {
 }
 
 void ScenePlay::updateStart( GamePtr game ) {
-	int time = (int)(double)( _count * 100 ) / 6;
-	int now = (int)( (double)( time - OFFSET ) + _song.offset * 1000 );
+	int time = _count * 100 / 6;
+	int now = (int)( (double)time - OFFSET + _song.offset );
 	double pitch = convertMsToPitch( 0 );
 	int seq = (int)( (double)now / pitch );
 	int mark = ( _idx + 1 ) * MAX_CODE;
@@ -158,10 +157,9 @@ void ScenePlay::updateStart( GamePtr game ) {
 	if ( seq >= mark &&
 		_before_seq < mark ) {
 		_idx++;
-		_time += (int)( pitch * MAX_CODE );
 	}
 	if ( ( time >= OFFSET )  ||
-		 ( _start_idx - OFFSET >= (int)( ( _song.offset * 1000 ) / pitch ) ) ) {
+		 ( _start_idx - OFFSET >= (int)( _song.offset / pitch ) ) ) {
 		Sound::playMusic( _music, false );
 		Sound::changeVol( VOL, _music );
 		_play_state = PLAY_STATE::PLAY_STATE_PLAY;
@@ -171,9 +169,9 @@ void ScenePlay::updateStart( GamePtr game ) {
 
 void ScenePlay::updatePlay( GamePtr game ) {
 	int mark = ( _idx + 1 ) * MAX_CODE;
-	int now = (int)( (double)Sound::getTime( _music ) + _song.offset * 1000 - _time + 0.5 );
+	int now = (int)( (double)Sound::getTime( _music ) + _song.offset - _time );
 	double pitch = convertMsToPitch( _idx );
-	int seq = (int)( (double)now / pitch + 0.5 ) + mark - MAX_CODE;
+	int seq = (int)( (double)now / pitch ) + mark - MAX_CODE;
 	if ( seq >= mark &&
 		_before_seq < mark ) {
 		_idx++;
@@ -181,7 +179,7 @@ void ScenePlay::updatePlay( GamePtr game ) {
 		if ( _idx >= measures_size ) {
 			_idx = measures_size - 1;
 		}
-		_time += (int)( pitch * MAX_CODE );
+		_time += pitch * MAX_CODE;
 	}
 	_before_seq = seq;
 
@@ -342,11 +340,12 @@ void ScenePlay::drawBg( ) {
 
 void ScenePlay::drawBarLine( ) const {
 	for ( int i = 0; i < 6; i++ ) {
-		int mark = ( _idx + i ) * MAX_CODE;
-		if ( mark < 200 ) {
-			continue;
+		int idx = _idx + i;
+		if ( idx >= (int)_song.measures.size( ) ) {
+			break;
 		}
-		int x = ( mark - _before_seq ) * SPEED + JUDGE_X;
+		int mark = ( _idx + i ) * MAX_CODE;
+		int x = (int)( ( mark - _before_seq ) * SPEED * _song.measures[ _idx + i ].scroll + JUDGE_X );
 		Drawer::drawLine( x, 180, x, 330 );
 	}
 }
@@ -374,9 +373,10 @@ void ScenePlay::drawBullet( MEASURE measure ) const {
 
 
 void ScenePlay::drawTitle( ) const {
+	unsigned int color = Drawer::getColor( 255, 255, 255 );
 	int x = WINDOW_WIDTH - _title.length( ) * ( FONT_SIZE / 2 ) - FONT_SIZE;
 	int y = 340;
-	Drawer::drawString( x, y, _title.c_str( ) );
+	Drawer::drawString( x, y, color, _title.c_str( ) );
 }
 
 void ScenePlay::drawMTaikoBack( ) const {
@@ -554,22 +554,23 @@ void ScenePlay::drawSoulGauge( ) const {
 }
 
 void ScenePlay::drawNote( GamePtr game ) const {
+	unsigned int color = Drawer::getColor( 255, 255, 255 );
 	if ( _play_state == PLAY_STATE::PLAY_STATE_WAIT ) {
-		Drawer::drawString( 350, 240, "Pleas push SPACE key  start" );
+		Drawer::drawString( 350, 240, color, "Pleas push SPACE key  start" );
 	}
 	if ( game->isAutomatic( ) ) {
-		Drawer::drawString( 0, 0, "オート中" );
+		Drawer::drawString( 0, 0, color, "オート中" );
 	}
 
 	int y = 400;
 	Drawer::drawBox( 350, y - 10, 1000, y + FONT_SIZE * 5, Drawer::getColor( 200, 55, 55 ) );
-	Drawer::drawString( 400, y, "ドン:<F><J>" );
+	Drawer::drawString( 400, y, color, "ドン:<F><J>" );
 	y += FONT_SIZE;
-	Drawer::drawString( 400, y, "カッ:<D><K>" );
+	Drawer::drawString( 400, y, color, "カッ:<D><K>" );
 	y += FONT_SIZE;
-	Drawer::drawString( 400, y, "終了:<Q><BackSpace><Escape>" );
+	Drawer::drawString( 400, y, color, "終了:<Q><BackSpace><Escape>" );
 	y += FONT_SIZE;
-	Drawer::drawString( 400, y, "オート:<1>" );
+	Drawer::drawString( 400, y, color, "オート:<1>" );
 }
 
 void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
@@ -585,8 +586,7 @@ void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
 		int tmp_type = 0;
 		int num = 0;
 		double scroll = _song.measures[ i ].scroll;
-		double measure = _song.measures[ i ].measure / 4;
-		//double bpm_speed = _song.bpm / _song.measures[ i ].measure;
+		double measure_ratio = 1.0;//_song.measures[ i ].measure / 4;
 		bool existence = true;
 		for ( int j = 0; j < code_size; j++ ) {
 			char type = _song.measures[ i ].codes[ j ];
@@ -614,7 +614,7 @@ void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
 			if ( existence ) {
 				Bullet::CODE code = Bullet::CODE( );
 				code.idx = idx;
-				code.speed = scroll * measure;// * bpm_speed;
+				code.speed = scroll * measure_ratio;
 				code.type = (Bullet::TYPE)type;
 
 				if ( type >= 5 && type <= 7 ) {

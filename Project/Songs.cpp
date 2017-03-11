@@ -30,15 +30,15 @@ Songs::SONG_DATA Songs::getSongData( int idx, DIFF diff ) const {
 
 	while ( getline( ifs, tmp ) ) {
 		if ( strstr( tmp.c_str( ), "BPM:" ) != NULL ) {
-			tmp.replace( 0, 4, "" );
+			tmp.erase( 0, 4 );
 			song_data.bpm = std::stod( tmp, 0 );
 			continue;
 		}
 		if ( strstr( tmp.c_str( ), "OFFSET:" ) != NULL ) {
 			bool minus = false;
-			tmp.replace( 0, 7, "" );
+			tmp.erase( 0, 7 );
 			if ( strstr( tmp.c_str( ), "-" ) != NULL ) {
-				tmp.replace( 0, 1, "" );
+				tmp.erase( 0, 1 );
 				minus = true;
 			}
 			song_data.offset = std::stod( tmp, 0 );
@@ -59,7 +59,7 @@ Songs::SONG_DATA Songs::getSongData( int idx, DIFF diff ) const {
 	if ( song_data.bpm == 0 ) {
 		song_data.bpm = 100.0;
 	}
-
+	song_data.offset *= 1000;
 	return song_data;
 }
 
@@ -67,10 +67,9 @@ Songs::SONG_INFO Songs::getInfo( int idx ) const {
 	return _song_info_list[ idx ];
 }
 
-int Songs::getLevel( int idx, DIFF diff ) const {
+int Songs::getLevel( std::string filename, DIFF diff ) const {
 	int level = 0;
 	std::string level_str;
-	std::string filename = _song_info_list[ idx ].filename;
 	std::ifstream ifs( filename );
 	if ( ifs.fail( ) ) {
 		return 0;
@@ -110,7 +109,7 @@ int Songs::getLevel( int idx, DIFF diff ) const {
 	}
 	while ( getline( ifs, level_str ) ) {
 		if ( strstr( level_str.c_str( ), "LEVEL:" ) != NULL ) {
-			level_str.replace( 0, 6, "" );
+			level_str.erase( 0, 6 );
 			level = std::atoi( level_str.c_str( ) );
 			break;
 		}
@@ -163,17 +162,17 @@ Songs::SONG_INFO Songs::getInfo( std::string filename, Songs::GENRE genre, std::
 			continue;
 		}
 		if ( strstr( tmp.c_str( ), "TITLE:" ) != NULL ) {
-			tmp.replace( 0, 6, "" );
+			tmp.erase( 0, 6 );
 			song_info.title = tmp;
 			continue;
 		}
 		if ( strstr( tmp.c_str( ), "WAVE:" ) != NULL ) {
-			tmp.replace( 0, 5, "" );
+			tmp.erase( 0, 5 );
 			song_info.music = directory + tmp;
 			continue;
 		}
 		if ( strstr( tmp.c_str( ), "DEMOSTART:" ) != NULL ) {
-			tmp.replace( 0, 10, "" );
+			tmp.erase( 0, 10 );
 			if ( tmp.size( ) != 0 ) {
 				double d_demo = std::stoi( tmp, 0 );
 				song_info.demo_pos = (int)( d_demo * 1000 + 0.5 );
@@ -185,6 +184,9 @@ Songs::SONG_INFO Songs::getInfo( std::string filename, Songs::GENRE genre, std::
 			 song_info.demo_pos != 0 ) {
 			break;
 		}
+	}
+	for ( int i = 0; i < DIFF::MAX_DIFF; i++ ) {
+		song_info.level[ i ] = getLevel( song_info.filename, (DIFF)i );
 	}
  	return song_info;
 }
@@ -220,13 +222,18 @@ Songs::GENRE Songs::getGenre( std::string directory ) const {
 
 	while ( getline( ifs, tmp ) ) {
 		if ( strstr( tmp.c_str( ), "GenreName=" ) != NULL ) {
-			tmp.replace( 0, 10, "" );
+			tmp.erase( 0, 10 );
 			genre.name = tmp;
 			continue;
 		}
 		if ( strstr( tmp.c_str( ), "GenreColor=" ) != NULL ) {
-			tmp.replace( 0, 11, "" );
+			tmp.erase( 0, 11 );
 			genre.color_code = tmp;
+			continue;
+		}
+		if ( strstr( tmp.c_str( ), "FontColor=" ) != NULL ) {
+			tmp.erase( 0, 10 );
+			genre.font_color = tmp;
 			continue;
 		}
 		if ( genre.name.size( ) != 0 && genre.color_code.size( ) != 0 ) {
@@ -314,17 +321,17 @@ std::vector< Songs::MEASURE > Songs::getCode( std::string filename, DIFF diff, d
 				continue;
 			}
 			if ( std::strstr( tmp_str.c_str( ), "#MEASURE " ) != NULL ) {
-				tmp_str.replace( 0, 9, "" );
+				tmp_str.erase( 0, 9 );
 				measure_str = tmp_str;
 				continue;
 			}
 			if ( std::strstr( tmp_str.c_str( ), "#BPMCHANGE " ) != NULL ) {
-				tmp_str.replace( 0, 11, "" );
+				tmp_str.erase( 0, 11 );
 				tmp_bpm = std::stod( tmp_str, 0 );
 				continue;
 			}
 			if ( std::strstr( tmp_str.c_str( ), "#SCROLL " ) != NULL ) {
-				tmp_str.replace( 0, 8, "" );
+				tmp_str.erase( 0, 8 );
 				tmp_scroll = std::stod( tmp_str, 0 );
 				continue;
 			}
