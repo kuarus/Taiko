@@ -44,6 +44,7 @@ unsigned int Drawer::getColor( std::string color_code ) {
 
 
 void Drawer::drawVString( int x, int y, unsigned int color, const char* str, ... ) {
+	int tmp_y = y;
 	if ( x > WINDOW_WIDTH ||
 		 y > WINDOW_HEIGHT) {
 		return;
@@ -64,6 +65,12 @@ void Drawer::drawVString( int x, int y, unsigned int color, const char* str, ...
 		if ( IsDBCSLeadByte( string[ 0 ] ) == 0 ) {
 			tmp = string.substr( 0, 1 );
 			string.erase( 0, 1 );
+			if ( tmp_y + FONT_SIZE * 15 < y ) {
+				DrawRotaString( x, y, 1, 1, 0, FONT_SIZE, 3.14 / 2, color, GetColor( 0, 0, 0 ), false, tmp.c_str( ) );
+				y -= FONT_SIZE * 6;
+				x -= FONT_SIZE;
+				continue;
+			}
 			if ( tmp < "A" ||
 				 tmp > "z" )  {
 				DrawRotaString( x, y, 1, 1, 0, FONT_SIZE, 3.14 / 2, color, GetColor( 0, 0, 0 ), false, tmp.c_str( ) );
@@ -75,6 +82,12 @@ void Drawer::drawVString( int x, int y, unsigned int color, const char* str, ...
 		} else {
 			tmp = string.substr( 0, 2 );
 			string.erase( 0, 2 );
+			if ( tmp_y + FONT_SIZE * 15 < y ) {
+				DrawRotaString( x, y, 1, 1, 0, FONT_SIZE, 3.14 / 2, color, GetColor( 0, 0, 0 ), false, tmp.c_str( ) );
+				y -= FONT_SIZE * 6;
+				x -= FONT_SIZE;
+				continue;
+			}
 			if ( tmp >= "ÅN" &&
 				 tmp <= "Å¸" &&
 				 tmp != "Åô" &&

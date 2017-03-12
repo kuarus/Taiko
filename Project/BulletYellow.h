@@ -13,5 +13,7 @@ public:
 	bool isOutSideScreen( ) const;
 private:
 	bool checkPush( int idx, GamePtr game ) const;
+private:
+	int _tx;
 };
 

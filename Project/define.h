@@ -5,8 +5,8 @@
 
 const int WINDOW_WIDTH = 1080;
 const int WINDOW_HEIGHT = 720;
-const int FONT_SIZE = 32;
-const int SPEED = 2;
+const int FONT_SIZE = 26;
+const double SPEED = 1.8;
 const int JUDGE_X = 220;
 const int MAX_CODE = 512;
 const int JUDGE_GREAT_RANGE = 6;

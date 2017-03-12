@@ -30,13 +30,15 @@ public:
 			}
 		}
 	};
-	struct MEASURE {
+	struct CODE_INFO {
+		int idx;
+		char type;
 		double bpm;
 		double measure;
 		double scroll;
-		std::vector< char > codes;
-		bool go_go_time; 
-		MEASURE( ) {
+		bool go_go_time;
+		CODE_INFO( ) {
+			this->idx = 0;
 			this->bpm = 0;
 			this->measure = 0;
 			this->scroll = 0;
@@ -46,7 +48,8 @@ public:
 	struct SONG_DATA {
 		double offset;
 		double bpm;
-		std::vector< MEASURE > measures;
+		std::vector< CODE_INFO > codes;
+		std::vector< CODE_INFO > bars;
 		SONG_DATA( ) {
 			this->offset = 0;
 			this->bpm = 0;
@@ -65,7 +68,7 @@ private:
 	std::vector< std::string > getDirectoryList( ) const;
 	GENRE getGenre( std::string directory ) const;
 	SONG_INFO getInfo( std::string filename, GENRE genre, std::string directory ) const;
-	std::vector< MEASURE> getCode( std::string filename, DIFF diff, double bpm ) const;
+	void setCode( SONG_DATA* song_info, std::string filename, DIFF diff, double bpm ) const;
 	double calcString( double num, std::string str ) const;
 private:
 	std::vector< SONG_INFO > _song_info_list;

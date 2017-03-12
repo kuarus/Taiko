@@ -5,6 +5,14 @@ static const int CHIP_SIZE = 64;
 
 BulletYellow::BulletYellow( CODE code ) :
 Bullet( code ) {
+	switch ( code.type ) {
+	case TYPE::TYPE_YELLOW:
+		_tx = 5;
+		break;
+	case TYPE::TYPE_BIG_YELLOW:
+		_tx = 8;
+		break;
+	}
 }
 
 
@@ -29,15 +37,15 @@ void BulletYellow::draw( int* image ) const {
 	int x2 = x1 + width;
 	int y2 = y1 + height;
 	//ç∂
-	Drawer::drawGraph( 5, 0, x1, y1, x2, y2, CHIP_SIZE, CHIP_SIZE, *image );
+	Drawer::drawGraph( _tx, 0, x1, y1, x2, y2, CHIP_SIZE, CHIP_SIZE, *image );
 	//íÜ
 	x1 = x2;
-	x2 = x1 + code.num * SPEED;
-	Drawer::drawGraph( 6, 0, x1, y1, x2, y2, CHIP_SIZE, CHIP_SIZE, *image );
+	x2 = (int)( x1 + code.num * SPEED );
+	Drawer::drawGraph( _tx + 1, 0, x1, y1, x2, y2, CHIP_SIZE, CHIP_SIZE, *image );
 	//âE
 	x1 = x2;
 	x2 = x1 + width;
-	Drawer::drawGraph( 7, 0, x1, y1, x2, y2, CHIP_SIZE, CHIP_SIZE, *image );
+	Drawer::drawGraph( _tx + 2, 0, x1, y1, x2, y2, CHIP_SIZE, CHIP_SIZE, *image );
 }
 
 Bullet::JUDGE BulletYellow::checkJudge( GamePtr game ) const {

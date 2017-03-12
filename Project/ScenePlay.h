@@ -65,26 +65,19 @@ private:
 		COMBO_FULL,
 		MAX_COMBO,
 	};
-	struct MEASURE {
-		std::list< BulletPtr > bullets;
-		double bpm;
-		MEASURE( ) {
-			this->bpm = 0;
-		}
-	};
 private:
 	void loadImages( );
 	void loadSounds( );
 	void updateStart( GamePtr game );
 	void updatePlay( GamePtr game );
-	void updateMeasure( GamePtr game, int seq );
+	//void updateMeasure( GamePtr game, int seq );
 	void updateJudge( );
-	BulletPtr updateBullet( GamePtr game, MEASURE* measure, int seq );
+	void updateBullet( GamePtr game, int seq );
 
 	void drawBg( );
 	void drawBarLine( ) const;
-	void drawMeasure( ) const;
-	void drawBullet( MEASURE measure ) const;
+	//void drawMeasure( ) const;
+	void drawBullet( ) const;
 	void drawTitle( ) const;
 	void drawMTaikoBack( ) const;
 	void drawMTaikoFront( GamePtr game ) const;
@@ -98,8 +91,7 @@ private:
 	void drawNote( GamePtr game ) const;
 	void loadBullet( SongsPtr songs, int select, Songs::DIFF diff );
 	void setJudge( Bullet::JUDGE judge );
-	void createMeasure( );
-	void createBullet( std::vector< Bullet::CODE > codes );
+	void createBullet( );
 	void playComboSound( );
 	void addScore( );
 	void addAnimation( Bullet::TYPE type );
@@ -123,8 +115,8 @@ private:
 	int _image[ IMAGE::MAX_IMAGE ];
 	int _combo_sound[ COMBO::MAX_COMBO ];
 	std::string _title;
-	std::vector< MEASURE > _measurs;
-	std::vector< std::vector< Bullet::CODE > > _loaded_measures;
+	std::vector< Bullet::CODE > _codes;
+	std::list< BulletPtr > _bullets;
 	std::list< AnimationBulletPtr > _animations;
 };
 

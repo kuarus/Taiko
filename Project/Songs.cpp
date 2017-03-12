@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <fstream>
 #include <assert.h>
+#include "define.h"
 
 static const std::string DIRECTORY = "Resource/Songs/";
 static const std::string EXTENTION = "tja";
@@ -54,7 +55,7 @@ Songs::SONG_DATA Songs::getSongData( int idx, DIFF diff ) const {
 			break;
 		}
 	}
-	song_data.measures = getCode( filename, diff, song_data.bpm );
+	setCode( &song_data, filename, diff, song_data.bpm );
 
 	if ( song_data.bpm == 0 ) {
 		song_data.bpm = 100.0;
@@ -243,12 +244,11 @@ Songs::GENRE Songs::getGenre( std::string directory ) const {
 	return genre;
 }
 
-std::vector< Songs::MEASURE > Songs::getCode( std::string filename, DIFF diff, double bpm ) const {
-	std::vector< MEASURE > code;
+void Songs::setCode( SONG_DATA* song_data, std::string filename, DIFF diff, double bpm ) const {
 	std::string tmp_str;
 	std::ifstream ifs( filename );
 	if ( ifs.fail( ) ) {
-		return code;
+		return;
 	}
 	bool start = false;
 	bool through = false;
@@ -292,13 +292,13 @@ std::vector< Songs::MEASURE > Songs::getCode( std::string filename, DIFF diff, d
 	std::string measure_str;
 	double tmp_bpm = bpm;
 	double tmp_scroll = 1.0;
+	bool next = false;
+	int measure_idx = 0;
+	std::vector< CODE_INFO > tmp_codes;
+
 
 	while ( std::getline( ifs, tmp_str ) ) {
-		MEASURE measure = MEASURE( );
-		measure.bpm = tmp_bpm;
-		measure.scroll = tmp_scroll;
-		measure.measure = calcString( 4.0, measure_str );
-		measure.go_go_time = go_go_time;
+		int idx = 0;
 		if ( !start ) {
 			if ( std::strstr( tmp_str.c_str( ), "#START" ) != NULL ) {
 				start = true;
@@ -354,22 +354,62 @@ std::vector< Songs::MEASURE > Songs::getCode( std::string filename, DIFF diff, d
 				continue;
 			}
 			if ( !through ) {
+				int line_size = tmp_str.size( ) - 1;
+				if ( !next ) {
+					CODE_INFO bar = CODE_INFO( );
+					bar.bpm = tmp_bpm;
+					bar.idx = measure_idx * MAX_CODE;
+					bar.type = 0;
+					bar.measure = calcString( 4.0, measure_str );
+					bar.scroll = tmp_scroll;
+					song_data->bars.push_back( bar );
+				}
 				std::string::const_iterator ite = tmp_str.begin( );
-				int size = tmp_str.size( );
+				char code_str = tmp_str.at( tmp_str.size( ) - 1 );
+				if ( code_str != ',' ) {
+					//カンマがないため長さがわからずidxが決まらない
+					next = true;
+				}
 				while ( ite != tmp_str.end( ) ) {
 					char str = (*ite);
-					if ( strstr( (const char*)&str, "," ) ) {
+					if ( str == ',' ) {
+						if ( next ) {
+							//２行以上のコードからidxを計算する
+							int size = tmp_codes.size( );
+							while ( tmp_codes.size( ) != 0 ) {
+								CODE_INFO tmp_code = tmp_codes.front( );
+								tmp_code.idx = measure_idx * MAX_CODE + idx;
+								song_data->codes.push_back( tmp_code );
+								idx += MAX_CODE / size;
+								tmp_codes.erase( tmp_codes.begin( ) );
+							}
+							next = false;
+						}
+						measure_idx++;
 						break;
 					}
-					measure.codes.push_back( atoi( (const char*)&str ) );
+					if ( str < '0' || str > '9' ) {
+						break;
+					}
+					CODE_INFO code = CODE_INFO( );
+					code.type = atoi( &str );
+					code.bpm = tmp_bpm;
+					code.idx = measure_idx * MAX_CODE + idx;
+					code.go_go_time = go_go_time;
+					code.measure = calcString( 4.0, measure_str );
+					code.scroll = tmp_scroll;
+					if ( next ) {
+						tmp_codes.push_back( code );
+					}
+					if ( !next ) {
+						song_data->codes.push_back( code );
+						idx += MAX_CODE / line_size;
+					}
 					ite++;
 				}
-				code.push_back( measure );
 			}
-			//tmp_bpm = bpm;
 		}
 	}
-	return code;
 }
 
 double Songs::calcString( double num, std::string str ) const {
