@@ -16,7 +16,7 @@ void BulletBaloon::update( int seq, GamePtr game ) {
 	_state = STATE::STATE_NORMAL;
 	CODE code = getCode( );
 	int idx = code.idx - seq;
-	if ( idx < 0 ) {
+	if ( idx <= 0 ) {
 		if ( idx <= -code.num ) {
 			idx += code.num;
 			_state = STATE::STATE_OUT;

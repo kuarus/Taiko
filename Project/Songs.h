@@ -45,11 +45,20 @@ public:
 			this->go_go_time = false;
 		}
 	};
+	struct BPM_INFO {
+		int idx;
+		double bpm;
+		BPM_INFO( ) {
+			this->idx = 0;
+			this->bpm = 0;
+		}
+	};
 	struct SONG_DATA {
 		double offset;
 		double bpm;
 		std::vector< CODE_INFO > codes;
 		std::vector< CODE_INFO > bars;
+		std::vector< BPM_INFO > bpms;
 		SONG_DATA( ) {
 			this->offset = 0;
 			this->bpm = 0;

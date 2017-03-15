@@ -297,8 +297,11 @@ void Songs::setCode( SONG_DATA* song_data, std::string filename, DIFF diff, doub
 	std::vector< CODE_INFO > tmp_codes;
 
 
+	int idx = 0;
 	while ( std::getline( ifs, tmp_str ) ) {
-		int idx = 0;
+		if ( !next ) {
+			idx = 0;
+		}
 		if ( !start ) {
 			if ( std::strstr( tmp_str.c_str( ), "#START" ) != NULL ) {
 				start = true;
@@ -328,6 +331,10 @@ void Songs::setCode( SONG_DATA* song_data, std::string filename, DIFF diff, doub
 			if ( std::strstr( tmp_str.c_str( ), "#BPMCHANGE " ) != NULL ) {
 				tmp_str.erase( 0, 11 );
 				tmp_bpm = std::stod( tmp_str, 0 );
+				BPM_INFO bpm_info = BPM_INFO( );
+				bpm_info.bpm = measure_idx * MAX_CODE + idx;
+				bpm_info.idx = idx;
+				song_data->bpms.push_back( bpm_info );
 				continue;
 			}
 			if ( std::strstr( tmp_str.c_str( ), "#SCROLL " ) != NULL ) {
@@ -379,7 +386,9 @@ void Songs::setCode( SONG_DATA* song_data, std::string filename, DIFF diff, doub
 							while ( tmp_codes.size( ) != 0 ) {
 								CODE_INFO tmp_code = tmp_codes.front( );
 								tmp_code.idx = measure_idx * MAX_CODE + idx;
-								song_data->codes.push_back( tmp_code );
+								if ( tmp_code.type != 0 ) {
+									song_data->codes.push_back( tmp_code );
+								}
 								idx += MAX_CODE / size;
 								tmp_codes.erase( tmp_codes.begin( ) );
 							}
@@ -402,7 +411,9 @@ void Songs::setCode( SONG_DATA* song_data, std::string filename, DIFF diff, doub
 						tmp_codes.push_back( code );
 					}
 					if ( !next ) {
-						song_data->codes.push_back( code );
+						if ( code.type != 0 ) {
+							song_data->codes.push_back( code );
+						}
 						idx += MAX_CODE / line_size;
 					}
 					ite++;

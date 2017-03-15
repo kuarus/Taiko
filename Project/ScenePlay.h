@@ -109,7 +109,9 @@ private:
 	int _idx;
 	int _music;
 	int _before_seq;
-	int _count;
+	int _seq_tmp;
+	int _start_count;
+	int _judge_count;
 	double _time;
 	int _flash_count;
 	int _image[ IMAGE::MAX_IMAGE ];

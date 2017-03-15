@@ -12,7 +12,6 @@
 static const int WAIT_APPEAR_TIME = 40;
 static const int OFFSET = 1000;
 static const int LOAD_IDX = 4000;
-static const int VOL = 255;//MAX255
 static const int MAX_GAUGE = 36;
 //score
 static const int GREAT_SCORE = 200;
@@ -28,7 +27,7 @@ _play_state( PLAY_STATE::PLAY_STATE_WAIT ),
 _before_seq( 0 ),
 _idx( 0 ),
 _result( ),
-_count( 0 ),
+_start_count( 0 ),
 _judge( Bullet::JUDGE::JUDGE_NONE ),
 _judge_draw( Bullet::JUDGE::JUDGE_NONE ),
 _flash_type( Bullet::TYPE::TYPE_NONE ) {
@@ -143,7 +142,8 @@ void ScenePlay::loadSounds( ) {
 }
 
 void ScenePlay::updateStart( GamePtr game ) {
-	int time = _count * 100 / 6;
+	int time = _start_count * 100 / 6;
+	_start_count++;
 	int now = (int)( (double)time - OFFSET + _song.offset );
 	double pitch = convertMsToPitch( 0 );
 	int seq = (int)( (double)now / pitch );
@@ -159,30 +159,27 @@ void ScenePlay::updateStart( GamePtr game ) {
 	if ( ( time >= OFFSET )  ||
 		 ( _start_idx - OFFSET >= (int)( _song.offset / pitch ) ) ) {
 		Sound::playMusic( _music, false );
-		Sound::changeVol( VOL, _music );
 		_play_state = PLAY_STATE::PLAY_STATE_PLAY;
 	}
-	_count++;
 }
 
 void ScenePlay::updatePlay( GamePtr game ) {
 	int current_idx = _idx + 1;
 	int bar_size = _song.bars.size( );
-	if ( current_idx >= bar_size ) {
-		current_idx = bar_size - 1;
-	}
-	int mark = _song.bars[ current_idx ].idx;
 	int now = (int)( (double)Sound::getTime( _music ) + _song.offset - _time );
 	double pitch = convertMsToPitch( _idx );
-	int seq = (int)( (double)now / pitch ) + mark - MAX_CODE;
+	int seq = (int)( (double)now / pitch ) + _song.bars[ _idx ].idx;
+	if ( current_idx < bar_size ) {
+		int mark = _song.bars[ current_idx ].idx;
 	if ( seq >= mark &&
 		_before_seq < mark ) {
-		_idx++;
-		int idx_size = _song.bars.size( );
-		if ( _idx >= idx_size ) {
-			_idx = idx_size - 1;
+			_idx++;
+			int idx_size = _song.bars.size( );
+			if ( _idx >= idx_size ) {
+				_idx = idx_size - 1;
+			}
+			_time += pitch * MAX_CODE;
 		}
-		_time += pitch * MAX_CODE;
 	}
 	_before_seq = seq;
 
@@ -197,45 +194,6 @@ void ScenePlay::updatePlay( GamePtr game ) {
 		_play_state = PLAY_STATE::PLAY_STATE_END;
 	}
 }
-
-//void ScenePlay::updateMeasure( GamePtr game, int seq ) {
-//	std::vector< ScenePlay::MEASURE >::iterator ite = _measurs.begin( );
-//	std::vector< BulletPtr > hits;
-//
-//	while ( ite != _measurs.end( ) ) {
-//		if ( (*ite).bullets.size( ) == 0 ) {
-//			ite = _measurs.erase( ite );
-//			continue;
-//		}
-//		BulletPtr bullet = updateBullet( game, &(*ite), seq );
-//		if ( bullet ) {
-//			hits.push_back( bullet );
-//		}
-//		ite++;
-//	}
-//
-//	if ( hits.size( ) != 0 ) {
-//		BulletPtr hit = BulletPtr( );
-//		int diff = 100;
-//		std::vector< BulletPtr >::iterator hits_ite = hits.begin( );
-//		while ( hits_ite != hits.end( ) ) {
-//			BulletPtr bullet = *hits_ite;
-//			int distance = bullet->getDistanceToJudge( );
-//			if ( distance < diff ) {
-//				diff = distance;
-//				hit = bullet;
-//			}
-//			hits_ite++;
-//		}
-//		Bullet::JUDGE judge = hit->checkJudge( game );
-//		setJudge( judge );
-//		if ( judge != Bullet::JUDGE::JUDGE_BAD &&
-//			 judge != Bullet::JUDGE::JUDGE_THROUGH ) {
-//			addAnimation( hit->getType( ) );
-//			hit->setFinished( );
-//		}
-//	}
-//}
 
 void ScenePlay::updateJudge( ) {
 	if ( _judge != Bullet::JUDGE::JUDGE_NONE ) {
@@ -265,10 +223,10 @@ void ScenePlay::updateJudge( ) {
 	}
 
 	if ( _judge_draw != Bullet::JUDGE::JUDGE_NONE ) {
-		if ( _count > JUDGE_DRAW_TIME ) {
+		if ( _judge_count > JUDGE_DRAW_TIME ) {
 			_judge_draw = Bullet::JUDGE::JUDGE_NONE;
 		}
-		_count++;
+		_judge_count++;
 	}
 	_judge = Bullet::JUDGE::JUDGE_NONE;
 }
@@ -285,9 +243,6 @@ void ScenePlay::updateBullet( GamePtr game, int seq ) {
 		}
 		bullet->update( seq, game );
 		if ( bullet->isOutSideScreen( ) || bullet->isFinished( ) ) {
-			//if ( bullet->isFinished( ) ) {
-			//	addAnimation( bullet->getType( ) );
-			//}
 			ite = _bullets.erase( ite );
 			continue;
 		}
@@ -354,19 +309,13 @@ void ScenePlay::drawBarLine( ) const {
 			break;
 		}
 		int mark = idx * MAX_CODE;
-		int x = (int)( ( mark - _before_seq ) * SPEED * _song.bars[ idx ].scroll + JUDGE_X );
+		if ( mark < _start_idx ) {
+			continue;
+		}
+		int x = (int)( ( mark - _before_seq ) * SPEED * _song.bars[ idx ].scroll * ( 1 + ( _song.bars[ idx ].measure / 4 - 1 ) / 5 ) + JUDGE_X );
 		Drawer::drawLine( x, 180, x, 330 );
 	}
 }
-
-//void ScenePlay::drawMeasure( ) const {
-//	std::vector< MEASURE >::const_iterator ite = _measurs.begin( );
-//	while ( ite != _measurs.end( ) ) {
-//		MEASURE measure = *ite;
-//		drawBullet( measure );
-//		ite++;
-//	}
-//}
 
 void ScenePlay::drawBullet( ) const {
 	std::list< BulletPtr >::const_iterator ite = _bullets.begin( );
@@ -424,7 +373,7 @@ void ScenePlay::drawJudge( ) const {
 		int tx = 0;
 		int ty = 0;
 		int sx1 = 170;
-		int sy1 = 100 - _count;
+		int sy1 = 100 - _judge_count;
 		int sx2 = sx1 + chip_size * 2;
 		int sy2 = sy1 + chip_size * 2;
 		switch ( _judge_draw ) {
@@ -446,7 +395,7 @@ void ScenePlay::drawExplosion( ) {
 	if ( _judge_draw == Bullet::JUDGE::JUDGE_GREAT ||
 		 _judge_draw == Bullet::JUDGE::JUDGE_GOOD ) {
 		const int CHIP_SIZE = 128;
-		int tx = _count / ( EXPLOSION_DRAW_TIME / 9 ) + 9;
+		int tx = _judge_count / ( EXPLOSION_DRAW_TIME / 9 ) + 9;
 		int ty = 2 ;
 		int sx1 = 150;
 		int sy1 = 190;
@@ -585,14 +534,15 @@ void ScenePlay::drawNote( GamePtr game ) const {
 
 void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
 	int codes_size = _song.codes.size( );
-	int tmp_type = 0;
-	int tmp_idx = 0;
-	bool through = false;
 	for ( int i = 0; i < codes_size; i++ ) {
 		Bullet::CODE code = Bullet::CODE( );
 		if ( _song.codes[ i ].type >= 5 && _song.codes[ i ].type <= 7 ) {
-			tmp_type = _song.codes[ i ].type;
-			through = true;
+			code.idx = _song.codes[ i ].idx;
+			code.num = _song.codes[ i + 1 ].idx - _song.codes[ i ].idx;
+			code.speed = _song.codes[ i ].scroll * ( 1 + ( _song.codes[ i ].measure / 4 - 1 ) / 5 );//óví≤êÆ(measure)
+			code.type = (Bullet::TYPE)_song.codes[ i ].type;
+			_codes.push_back( code );
+			i++;
 			continue;
 		}
 		if ( _song.codes[ i ].type == 0 ) {
@@ -601,24 +551,17 @@ void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
 		if ( _song.codes[ i ].type >= 9 ) {
 			continue;
 		}
-		if ( _song.codes[ i ].type == 8 ) {
-			through = false;
-			_song.codes[ i ].type = tmp_type;
-		}
-		if ( !through ) {
-			code.idx = _song.codes[ i ].idx;
-			code.num = _song.codes[ i ].idx - tmp_idx;
-			code.speed = _song.codes[ i ].scroll;
-			code.type = (Bullet::TYPE)_song.codes[ i ].type;
-			_codes.push_back( code );
-		}
+		code.idx = _song.codes[ i ].idx;
+		code.speed = _song.codes[ i ].scroll * ( 1 + ( _song.codes[ i ].measure / 4 - 1 ) / 5 );//óví≤êÆ(measure)
+		code.type = (Bullet::TYPE)_song.codes[ i ].type;
+		_codes.push_back( code );
 	}
 }
 
 void ScenePlay::setJudge( Bullet::JUDGE judge ) {
 	_judge = judge;
 	_judge_draw = judge;
-	_count = 0;
+	_judge_count = 0;
 }
 
 void ScenePlay::createBullet( ) {

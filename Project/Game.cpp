@@ -34,13 +34,13 @@ _is_finish( false ) {
 	for ( int i = 0; i < GRAPH_MAX; i++ ) {
 		_images[ i ] = 0;
 	}
+	SetCreateSoundDataType( DX_SOUNDDATATYPE_FILE );
 
 	_se[ SE::SE_DONG ] = Sound::load( "Resource/Sound/dong.wav" );
 	_se[ SE::SE_KA   ] = Sound::load( "Resource/Sound/ka.wav" );
 
 	_songs = SongsPtr( new Songs );
 	_scene_ptr = ScenePtr( new SceneTitle( ) );
-	SetCreateSoundDataType( DX_SOUNDDATATYPE_FILE );
 	for ( int i = 0; i < 256; i++ ) {
 		_key[ i ] = 0;
 		_device[ i ] = 0;

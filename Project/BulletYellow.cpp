@@ -40,7 +40,7 @@ void BulletYellow::draw( int* image ) const {
 	Drawer::drawGraph( _tx, 0, x1, y1, x2, y2, CHIP_SIZE, CHIP_SIZE, *image );
 	//’†
 	x1 = x2;
-	x2 = (int)( x1 + code.num * SPEED );
+	x2 = (int)( x1 + code.num * SPEED * code.speed );
 	Drawer::drawGraph( _tx + 1, 0, x1, y1, x2, y2, CHIP_SIZE, CHIP_SIZE, *image );
 	//‰E
 	x1 = x2;
@@ -57,7 +57,7 @@ void BulletYellow::setTurn( ) {
 
 bool BulletYellow::isOutSideScreen( ) const {
 	Bullet::CODE code = getCode( );
-	return ( code.idx + code.num * SPEED / 2 + getWidth( ) ) < 0;
+	return ( code.idx + code.num * SPEED * code.speed + getWidth( ) ) < 0;
 }
 
 bool BulletYellow::checkPush( int idx, GamePtr game ) const {
