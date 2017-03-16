@@ -9,8 +9,8 @@ const int FONT_SIZE = 26;
 const double SPEED = 1.8;
 const int JUDGE_X = 220;
 const int MAX_CODE = 512;
-const int JUDGE_GREAT_RANGE = 6;
-const int JUDGE_GOOD_RANGE = 20;
+const int JUDGE_GREAT_RANGE = 8;
+const int JUDGE_GOOD_RANGE = 24;
 const int JUDGE_BAD_RANGE = 30;
 
 enum GRAPH {

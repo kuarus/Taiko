@@ -10,42 +10,36 @@ static const int SELECTING_X = 400;
 static const int MENU_HEIGHT = 550;
 static const int MENU_Y = 30;
 static const int INTERVAL = 20;
+static const int WAIT_AUDITION_TIME = 60;
+static const int WAIT_PUSH_TIME = 8;
 
 SceneSongSelect::SceneSongSelect( SongsPtr songs, int select ) :
 _select( select ),
-_state( STATE::STATE_SELECT_SONG ),
-_selecting_diff( Songs::DIFF::EASY ) {
+_state( STATE::STATE_INIT ),
+_selecting_diff( Songs::DIFF::EASY ),
+_count( 0 ),
+_start( true ) {
 	_song_list = songs->getSongInfoList( );
 	_bg_image = Drawer::loadGraph( "Resource/img/song_select_bg.png" );
-	Drawer::changeFontSize( FONT_SIZE * 4 );
-	for ( int i = 0; i < 1024; i++ ) {
-		if ( i >= (int)_song_list.size( ) ) {
-			_music[ i ] = 0;
-			continue;
-		}
-		if ( i % 20 == 0 ) {
-			int pattern = i / 20 % 4;
-			Drawer::drawLoading( pattern );
-		}
-		_music[ i ] = Sound::load( _song_list[ i ].music.c_str( ) );
-	}
-
-	audition( 0 );
-	Drawer::changeFontSize( FONT_SIZE );
 }
 
 
 SceneSongSelect::~SceneSongSelect( ) {
 	Drawer::deleteGraph( _bg_image );
-	Sound::stop( _music[ _select ] );
-	for ( int i = 0; i < 1024; i++ ) {
-		Sound::destroy( _music[ i ] );
-	}
+	Sound::stop( _music );
+	Sound::destroy( _music );
 }
 
 void SceneSongSelect::update( GamePtr game ) {
 	select( game );
 	switch ( _state ) {
+	case STATE::STATE_INIT:
+		if ( _song_list.size( ) == 0 ) {
+			game->setScene( Game::SCENE::SCENE_MENU );
+		} else {
+			_state = STATE::STATE_SELECT_SONG;
+		}
+		break;
 	case STATE::STATE_SELECT_SONG:
 		if ( game->isNext( ) ) {
 			_state = STATE::STATE_SELECT_DIFF;
@@ -69,6 +63,9 @@ void SceneSongSelect::update( GamePtr game ) {
 }
 
 void SceneSongSelect::draw( GamePtr game ) {
+	if ( _state == STATE::STATE_INIT ) {
+		return;
+	}
 	Drawer::drawGraph( 0, 0, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 512, 384, _bg_image );
 	drawSongList( );
 }
@@ -146,28 +143,11 @@ void SceneSongSelect::drawSongList( ) {
 }
 
 void SceneSongSelect::select( GamePtr game ) {
-	int list_size = _song_list.size( );
-	bool push = false;
-	int old_select = _select;
 	int selecting_diff = (int)_selecting_diff;
 
 	switch ( _state ) {
 	case STATE::STATE_SELECT_SONG:
-		if ( game->isKaLeft( ) ) {
-			_select--;
-			push = true;
-		}
-		if ( game->isKaRight( ) ) {
-			_select++;
-			push = true;
-		}
-		_select %= list_size;
-		if ( _select < 0 ) {
-			_select += list_size;
-		}
-		if ( push ) {
-			audition( old_select );
-		}
+		updateSelectSong( game );
 		break;
 	case STATE::STATE_SELECT_DIFF:
 		if ( game->isKaLeft( ) ) {
@@ -187,9 +167,55 @@ void SceneSongSelect::select( GamePtr game ) {
 	}
 }
 
-void SceneSongSelect::audition( int old_select ) {
-	Sound::stop( _music[ old_select ] );
-	//_music[ _select ] = Sound::load( _song_list[ _select ].music.c_str( ) );
-	Sound::playMusic( _music[ _select ], true, _song_list[ _select ].demo_pos );
-	Sound::changeVol( 240, _music[ _select ] );
+void SceneSongSelect::updateSelectSong( GamePtr game ) {
+	int list_size = _song_list.size( );
+	bool push = false;
+	if ( game->isKaLeft( ) ) {
+		_select--;
+		push = true;
+	}
+	if ( game->isKaRight( ) ) {
+		_select++;
+		push = true;
+	}
+	if ( game->isHoldKaLeft( ) ) {
+		if ( _count > WAIT_PUSH_TIME ) {
+			game->setKey( Game::KEY::KEY_D );
+			_select--;
+			push = true;
+		}
+	}
+	if ( game->isHoldKaRight( ) ) {
+		if ( _count > WAIT_PUSH_TIME ) {
+			game->setKey( Game::KEY::KEY_K );
+			_select++;
+			push = true;
+		}
+	}
+	_select %= list_size;
+	if ( _select < 0 ) {
+		_select += list_size;
+	}
+	if ( push ) {
+		_count = 0;
+		stopMusic( );
+		_start = true;
+	}
+	if ( _count > WAIT_AUDITION_TIME ) {
+		if ( _start ) {
+			playMusic( );
+			_start = false;
+		}
+	}
+	_count++;
+}
+
+void SceneSongSelect::playMusic( ) {
+	_music = Sound::load( _song_list[ _select ].music.c_str( ) );
+	Sound::playMusic( _music, true, _song_list[ _select ].demo_pos );
+}
+
+void SceneSongSelect::stopMusic( ) {
+	Sound::stop( _music );
+	Sound::destroy( _music );
 }

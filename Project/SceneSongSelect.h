@@ -10,6 +10,7 @@ public:
 	void draw( GamePtr game );
 private:
 	enum STATE {
+		STATE_INIT,
 		STATE_SELECT_SONG,
 		STATE_SELECT_DIFF,
 		MAX_STATE,
@@ -19,11 +20,15 @@ private:
 	void drawSong( int x1, int y1, int x2, int y2, int idx );
 	void drawSongList( );
 	void select( GamePtr game );
-	void audition( int old_select );
+	void updateSelectSong( GamePtr game );
+	void playMusic( );
+	void stopMusic( );
 private:
 	int _bg_image;
 	int _select;
-	int _music[ 1024 ];
+	int _music;
+	int _count;
+	bool _start;
 	STATE _state;
 	Songs::DIFF _selecting_diff;
 	std::vector< Songs::SONG_INFO > _song_list;

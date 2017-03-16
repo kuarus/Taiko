@@ -34,11 +34,12 @@ _is_finish( false ) {
 	for ( int i = 0; i < GRAPH_MAX; i++ ) {
 		_images[ i ] = 0;
 	}
-	SetCreateSoundDataType( DX_SOUNDDATATYPE_FILE );
+	SetCreateSoundDataType( DX_SOUNDDATATYPE_MEMNOPRESS );
 
 	_se[ SE::SE_DONG ] = Sound::load( "Resource/Sound/dong.wav" );
 	_se[ SE::SE_KA   ] = Sound::load( "Resource/Sound/ka.wav" );
 
+	SetCreateSoundDataType( DX_SOUNDDATATYPE_FILE );
 	_songs = SongsPtr( new Songs );
 	_scene_ptr = ScenePtr( new SceneTitle( ) );
 	for ( int i = 0; i < 256; i++ ) {
@@ -75,6 +76,10 @@ void Game::setKey( SE se ) {
 	}
 }
 
+void Game::setKey( KEY key ) {
+	_key[ key ]++;
+}
+
 bool Game::isPushKey( int key ) const {
 	bool result = false;
 	if ( ( _key[ key ] == 1 ) ||
@@ -86,8 +91,8 @@ bool Game::isPushKey( int key ) const {
 
 bool Game::isHoldKey( int key ) const {
 	bool result = false;
-	if ( ( _key[ key ] >= 1 ) ||
-		 ( _device[ key ] >= 1 ) ) {
+	if ( ( _key[ key ] > 20 ) ||
+		 ( _device[ key ] > 20 ) ) {
 		result = true;
 	}
 	return result;
@@ -153,16 +158,6 @@ bool Game::isKaLeft( ) const {
 	if ( _automatic[ SE::SE_KA ] ) {
 		push = true;
 	}
-	int pad = GetJoypadInputState( DX_INPUT_PAD1 );
-	if ( pad & PAD_INPUT_UP ) {
-		push = true;
-	}
-	if ( pad & PAD_INPUT_7 ) {
-		push = true;
-	}
-	if ( pad & PAD_INPUT_5 ) {
-		push = true;
-	}
 	return push;
 }
 
@@ -174,18 +169,32 @@ bool Game::isKaRight( ) const {
 	if ( isPushKey( KEY::KEY_RIGHT ) ) {
 		push = true;
 	}
-	
-	int pad = GetJoypadInputState( DX_INPUT_PAD1 );
-	if ( pad & PAD_INPUT_2 ) {
-		push = true;
-	}
-	if ( pad & PAD_INPUT_9 ) {
-		push = true;
-	}
-	if ( pad & PAD_INPUT_8 ) {
-		push = true;
-	}
 	return push;
+}
+
+bool Game::isHoldKaLeft( ) const {
+	bool hold = false;
+	if ( isHoldKey( KEY::KEY_D ) ) {
+		hold = true;
+	}
+	if ( isHoldKey( KEY::KEY_LEFT ) ) {
+		hold = true;
+	}
+	if ( _automatic[ SE::SE_KA ] ) {
+		hold = true;
+	}
+	return hold;
+}
+
+bool Game::isHoldKaRight( ) const {
+	bool hold = false;
+	if ( isHoldKey( KEY::KEY_K ) ) {
+		hold = true;
+	}
+	if ( isHoldKey( KEY::KEY_RIGHT ) ) {
+		hold = true;
+	}
+	return hold;
 }
 
 bool Game::isAutomatic( ) const {
@@ -223,7 +232,6 @@ bool Game::isFinish( ) {
 void Game::update( ) {
 	updateKey( );
 	//updateDevice( );
-	updateSe( );
 	changeAutomatic( );
 	if ( _scene_ptr ) {
 		_scene_ptr->update( getThis( ) );
@@ -233,6 +241,7 @@ void Game::update( ) {
 		changeScene( _scene );
 		_old_scene = _scene;
 	}
+	updateSe( );
 }
 
 void Game::flip( ) const {
@@ -272,10 +281,12 @@ void Game::updateKey( ) {
 	GetHitKeyStateAll( key );
 
 	for ( int i = 0; i < 256; i++ ) {
+		if ( _key[ i ] <= 20 ) {
+			_key[ i ]++;
+		}
 		if ( key[ i ] == 0 ) {
 			_key[ i ] = 0;
 		}
-		_key[ i ] += key[ i ];
 	}
 }
 

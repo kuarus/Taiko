@@ -69,6 +69,7 @@ public:
 	void setFinish( );
 	void setResult( RESULT result );
 	void setKey( SE se );
+	void setKey( KEY key );
 	bool isPushKey( int key ) const;
 	bool isHoldKey( int key ) const;
 	bool isPushDevice( int key ) const;
@@ -79,6 +80,8 @@ public:
 	bool isDongRight( ) const;
 	bool isKaLeft( ) const;
 	bool isKaRight( ) const;
+	bool isHoldKaLeft( ) const;
+	bool isHoldKaRight( ) const;
 	bool isAutomatic( ) const;
 private:
 	void changeAutomatic( );

@@ -312,7 +312,11 @@ void ScenePlay::drawBarLine( ) const {
 		if ( mark < _start_idx ) {
 			continue;
 		}
-		int x = (int)( ( mark - _before_seq ) * SPEED * _song.bars[ idx ].scroll * ( 1 + ( _song.bars[ idx ].measure / 4 - 1 ) / 5 ) + JUDGE_X );
+		double measure_spped = 1 + ( _song.bars[ idx ].measure / 4 - 1 );
+		if ( measure_spped < 1 ) {
+			measure_spped = 1.0;
+		}
+		int x = (int)( ( mark - _before_seq ) * SPEED * _song.bars[ idx ].scroll * measure_spped + JUDGE_X );
 		Drawer::drawLine( x, 180, x, 330 );
 	}
 }
@@ -539,7 +543,11 @@ void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
 		if ( _song.codes[ i ].type >= 5 && _song.codes[ i ].type <= 7 ) {
 			code.idx = _song.codes[ i ].idx;
 			code.num = _song.codes[ i + 1 ].idx - _song.codes[ i ].idx;
-			code.speed = _song.codes[ i ].scroll * ( 1 + ( _song.codes[ i ].measure / 4 - 1 ) / 5 );//要調整(measure)
+			double measure_spped = 1 + ( _song.codes[ i ].measure / 4 - 1 );
+			if ( measure_spped < 1 ) {
+				measure_spped = 1.0;
+			}
+			code.speed = _song.codes[ i ].scroll * measure_spped;//要調整(measure)
 			code.type = (Bullet::TYPE)_song.codes[ i ].type;
 			_codes.push_back( code );
 			i++;
@@ -552,7 +560,11 @@ void ScenePlay::loadBullet( SongsPtr songs, int select, Songs::DIFF diff ) {
 			continue;
 		}
 		code.idx = _song.codes[ i ].idx;
-		code.speed = _song.codes[ i ].scroll * ( 1 + ( _song.codes[ i ].measure / 4 - 1 ) / 5 );//要調整(measure)
+		double measure_spped = 1 + ( _song.codes[ i ].measure / 4 - 1 );
+			if ( measure_spped < 1 ) {
+				measure_spped = 1.0;
+			}
+			code.speed = _song.codes[ i ].scroll * measure_spped;//要調整(measure)
 		code.type = (Bullet::TYPE)_song.codes[ i ].type;
 		_codes.push_back( code );
 	}
@@ -654,7 +666,7 @@ void ScenePlay::addAnimation( Bullet::TYPE type ) {
 
 double ScenePlay::convertMsToPitch( int idx ) {
 	if ( idx == -1 ) {
-		return ( 60.0 / _song.bpm * 4.0 * 1000 / MAX_CODE );
+		return 0;
 	}
 	//ms→bpm
 	//bpm = 60 / ms * measure
